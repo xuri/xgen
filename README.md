@@ -2,6 +2,12 @@
 
 # xgen
 
+[![Build Status](https://github.com/xuri/xgen/workflows/Go/badge.svg)](https://github.com/xuri/xgen/actions?workflow=Go)
+[![Code Coverage](https://codecov.io/gh/xuri/xgen/branch/master/graph/badge.svg)](https://codecov.io/gh/xuri/xgen)
+[![Go Report Card](https://goreportcard.com/badge/github.com/xuri/xgen)](https://goreportcard.com/report/github.com/xuri/xgen)
+[![GoDoc](https://godoc.org/github.com/xuri/xgen?status.svg)](https://godoc.org/github.com/xuri/xgen)
+[![Licenses](https://img.shields.io/badge/license-bsd-orange.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 ## Introduction
 
 xgen is a library written in pure Go providing a set of functions that allow you to parse XSD (XML schema files). This library needs Go version 1.10 or later. The full API docs can be seen using go's built-in documentation tool, or online at [godoc.org](https://godoc.org/github.com/xuri/xgen).

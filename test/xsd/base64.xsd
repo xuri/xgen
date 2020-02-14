@@ -1,0 +1,36 @@
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://example.org/">
+  <simpleType name="myType1">
+    <restriction base="base64Binary">
+      <length value="10" />
+    </restriction>
+  </simpleType>
+
+  <complexType name="myType2">
+    <simpleContent>
+      <extension base="base64Binary">
+        <attribute name="length" type="int"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+
+  <complexType name="myType3">
+    <simpleContent>
+      <extension base="date">
+        <attribute name="length" type="int"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+
+  <complexType name="myType4">
+    <sequence>
+      <element name="title" type="string"/>
+      <element name="blob" type="base64Binary"/>
+      <element name="timestamp" type="dateTime"/>
+    </sequence>
+  </complexType>
+
+  <simpleType name="myType5">
+    <restriction base="gDay"/>
+  </simpleType>
+</schema>
+
