@@ -110,7 +110,7 @@ func main() {
 		os.Exit(1)
 	}
 	for _, file := range files {
-		parser := xgen.NewParser(&xgen.Options{
+		if err = xgen.NewParser(&xgen.Options{
 			FilePath:            file,
 			OutputDir:           cfg.O,
 			LocalNameNSMap:      make(map[string]string),
@@ -118,8 +118,7 @@ func main() {
 			ParseFileList:       make(map[string]bool),
 			ParseFileMap:        make(map[string][]interface{}),
 			ProtoTree:           make([]interface{}, 0),
-		})
-		if _, err = parser.Parse(); err != nil {
+		}).Parse(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
