@@ -10,6 +10,9 @@ package xgen
 
 import "encoding/xml"
 
+// OnSimpleType handles parsing event on the simpleType start elements. The
+// simpleType element defines a simple type and specifies the constraints and
+// information about the values of attributes or text-only elements.
 func (opt *Options) OnSimpleType(ele xml.StartElement, protoTree []interface{}) (err error) {
 	if opt.SimpleType.Len() == 0 {
 		opt.SimpleType.Push(&SimpleType{})
@@ -19,6 +22,20 @@ func (opt *Options) OnSimpleType(ele xml.StartElement, protoTree []interface{}) 
 		if attr.Name.Local == "name" {
 			opt.SimpleType.Peek().(*SimpleType).Name = attr.Value
 		}
+	}
+	return
+}
+
+// EndSimpleType handles parsing event on the simpleType end elements.
+func (opt *Options) EndSimpleType(ele xml.EndElement, protoTree []interface{}) (err error) {
+	if ele.Name.Local == opt.CurrentEle && opt.ComplexType.Len() == 1 {
+		opt.ProtoTree = append(opt.ProtoTree, opt.ComplexType.Pop())
+		opt.CurrentEle = ""
+	}
+
+	if ele.Name.Local == opt.CurrentEle && !opt.InUnion {
+		opt.ProtoTree = append(opt.ProtoTree, opt.SimpleType.Pop())
+		opt.CurrentEle = ""
 	}
 	return
 }

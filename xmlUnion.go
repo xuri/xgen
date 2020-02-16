@@ -13,6 +13,9 @@ import (
 	"strings"
 )
 
+// OnUnion handles parsing event on the union start elements. The union
+// element defines a simple type as a collection (union) of values from
+// specified simple data types.
 func (opt *Options) OnUnion(ele xml.StartElement, protoTree []interface{}) (err error) {
 	opt.InUnion = true
 	if opt.SimpleType.Peek() == nil {
@@ -31,6 +34,14 @@ func (opt *Options) OnUnion(ele xml.StartElement, protoTree []interface{}) (err 
 			}
 			continue
 		}
+	}
+	return
+}
+
+// EndUnion handles parsing event on the union end elements.
+func (opt *Options) EndUnion(ele xml.EndElement, protoTree []interface{}) (err error) {
+	if opt.SimpleType.Len() > 0 {
+		opt.InUnion = false
 	}
 	return
 }

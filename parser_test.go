@@ -35,8 +35,9 @@ func TestParse(t *testing.T) {
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
 			ParseFileMap:        make(map[string][]interface{}),
+			ProtoTree:           make([]interface{}, 0),
 		})
-		_, err = parser.Parse()
+		err = parser.Parse()
 		assert.NoError(t, err)
 		if filepath.Ext(file) == ".xsd" {
 			srcCode := filepath.Join(goSrcDir, filepath.Base(file)+".go")

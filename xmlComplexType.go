@@ -10,6 +10,8 @@ package xgen
 
 import "encoding/xml"
 
+// OnComplexType handles parsing event on the complex start elements. A
+// complex element contains other elements and/or attributes.
 func (opt *Options) OnComplexType(ele xml.StartElement, protoTree []interface{}) (err error) {
 	if opt.ComplexType.Len() > 0 {
 		e := opt.Element.Pop().(*Element)
@@ -32,5 +34,12 @@ func (opt *Options) OnComplexType(ele xml.StartElement, protoTree []interface{})
 		}
 		opt.ComplexType.Push(&c)
 	}
+	return
+}
+
+// EndComplexType handles parsing event on the complex end elements.
+func (opt *Options) EndComplexType(ele xml.EndElement, protoTree []interface{}) (err error) {
+	opt.ProtoTree = append(opt.ProtoTree, opt.ComplexType.Pop())
+	opt.CurrentEle = ""
 	return
 }

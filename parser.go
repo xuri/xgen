@@ -29,6 +29,7 @@ type Options struct {
 	NSSchemaLocationMap map[string]string
 	ParseFileList       map[string]bool
 	ParseFileMap        map[string][]interface{}
+	ProtoTree           []interface{}
 
 	InElement        string
 	CurrentEle       string
@@ -53,7 +54,7 @@ func NewParser(options *Options) *Options {
 // Parse reads XML documents and return proto tree for every element in the
 // documents by given options. If value of the properity extract is false,
 // parse will fetch schema used in <import> or <include> statements.
-func (opt *Options) Parse() (protoTree []interface{}, err error) {
+func (opt *Options) Parse() (err error) {
 	opt.FileDir = filepath.Dir(opt.FilePath)
 	var fi os.FileInfo
 	fi, err = os.Stat(opt.FilePath)
@@ -70,9 +71,9 @@ func (opt *Options) Parse() (protoTree []interface{}, err error) {
 	}
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
-		opt.ParseFileMap[opt.FilePath] = protoTree
+		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
 	}
-	protoTree = make([]interface{}, 0)
+	opt.ProtoTree = make([]interface{}, 0)
 
 	opt.InElement = ""
 	opt.CurrentEle = ""
@@ -102,7 +103,7 @@ func (opt *Options) Parse() (protoTree []interface{}, err error) {
 			funcName := fmt.Sprintf("On%s", MakeFirstUpperCase(opt.InElement))
 			onEleFunc := reflect.ValueOf(opt).MethodByName(funcName)
 			if onEleFunc.IsValid() {
-				rt := onEleFunc.Call([]reflect.Value{reflect.ValueOf(element), reflect.ValueOf(protoTree)})
+				rt := onEleFunc.Call([]reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)})
 				if !rt[0].IsNil() {
 					err = rt[0].Interface().(error)
 					return
@@ -110,79 +111,25 @@ func (opt *Options) Parse() (protoTree []interface{}, err error) {
 			}
 
 		case xml.EndElement:
-			if opt.ComplexType.Len() > 0 {
-				if element.Name.Local == opt.CurrentEle && opt.ComplexType.Len() == 1 {
-					protoTree = append(protoTree, opt.ComplexType.Pop())
-					opt.CurrentEle = ""
-					continue
-				}
-				if element.Name.Local == "complexType" {
-					protoTree = append(protoTree, opt.ComplexType.Pop())
-					opt.CurrentEle = ""
-					continue
-				}
-			}
-			if opt.SimpleType.Len() > 0 {
-				if element.Name.Local == opt.CurrentEle && !opt.InUnion {
-					protoTree = append(protoTree, opt.SimpleType.Pop())
-					opt.CurrentEle = ""
-				}
-				if element.Name.Local == "union" {
-					opt.InUnion = false
-				}
-				if opt.Element.Len() > 0 {
-					opt.Element.Peek().(*Element).Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, protoTree)
-					if err != nil {
-						return
-					}
-					opt.CurrentEle = ""
-				}
-				if opt.Attribute != nil && opt.SimpleType.Peek() != nil {
-					opt.Attribute.Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, protoTree)
-					if err != nil {
-						return
-					}
-					opt.CurrentEle = ""
-				}
-			}
-			if opt.Attribute != nil && opt.ComplexType.Len() == 0 {
-				protoTree = append(protoTree, opt.Attribute)
-			}
-			if element.Name.Local == "element" {
-				if opt.Element.Len() > 0 && opt.ComplexType.Len() == 0 {
-					protoTree = append(protoTree, opt.Element.Pop())
-				}
-			}
-
-			if opt.Group != nil {
-				if element.Name.Local == opt.CurrentEle && opt.InGroup == 1 {
-					protoTree = append(protoTree, opt.Group)
-					opt.CurrentEle = ""
-					opt.InGroup--
-					opt.Group = nil
-				}
-				if element.Name.Local == opt.CurrentEle {
-					opt.InGroup--
-				}
-
-			}
-			if opt.AttributeGroup != nil {
-				if element.Name.Local == opt.CurrentEle && opt.InAttributeGroup {
-					protoTree = append(protoTree, opt.AttributeGroup)
-					opt.CurrentEle = ""
-					opt.InAttributeGroup = false
-					opt.AttributeGroup = nil
+			funcName := fmt.Sprintf("End%s", MakeFirstUpperCase(element.Name.Local))
+			onEleFunc := reflect.ValueOf(opt).MethodByName(funcName)
+			if onEleFunc.IsValid() {
+				rt := onEleFunc.Call([]reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)})
+				if !rt[0].IsNil() {
+					err = rt[0].Interface().(error)
+					return
 				}
 			}
 		default:
 		}
+
 	}
 	defer xmlFile.Close()
 
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
-		opt.ParseFileMap[opt.FilePath] = protoTree
-		if err = genCode(filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)), protoTree); err != nil {
+		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
+		if err = genCode(filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)), opt.ProtoTree); err != nil {
 			return
 		}
 	}
@@ -216,7 +163,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 
 	depXSDSchema, ok := opt.ParseFileMap[xsdFile]
 	if !ok {
-		depXSDSchema, err = NewParser(&Options{
+		parser := NewParser(&Options{
 			FilePath:            xsdFile,
 			OutputDir:           opt.OutputDir,
 			Extract:             false,
@@ -224,16 +171,18 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			NSSchemaLocationMap: opt.NSSchemaLocationMap,
 			ParseFileList:       opt.ParseFileList,
 			ParseFileMap:        opt.ParseFileMap,
-		}).Parse()
-		if err != nil {
+			ProtoTree:           make([]interface{}, 0),
+		})
+		if parser.Parse() != nil {
 			return
 		}
+		depXSDSchema = parser.ProtoTree
 	}
 	valueType = getBasefromSimpleType(trimNSPrefix(value), depXSDSchema)
 	if valueType != trimNSPrefix(value) && valueType != "" {
 		return
 	}
-	extractXSDSchema, err := NewParser(&Options{
+	parser := NewParser(&Options{
 		FilePath:            xsdFile,
 		OutputDir:           opt.OutputDir,
 		Extract:             true,
@@ -241,10 +190,11 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		NSSchemaLocationMap: opt.NSSchemaLocationMap,
 		ParseFileList:       opt.ParseFileList,
 		ParseFileMap:        opt.ParseFileMap,
-	}).Parse()
-	if err != nil {
+		ProtoTree:           make([]interface{}, 0),
+	})
+	if parser.Parse() != nil {
 		return
 	}
-	valueType = getBasefromSimpleType(trimNSPrefix(value), extractXSDSchema)
+	valueType = getBasefromSimpleType(trimNSPrefix(value), parser.ProtoTree)
 	return
 }

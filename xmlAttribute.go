@@ -10,6 +10,8 @@ package xgen
 
 import "encoding/xml"
 
+// OnAttribute handles parsing event on the attribute start elements. All
+// attributes are declared as simple types.
 func (opt *Options) OnAttribute(ele xml.StartElement, protoTree []interface{}) (err error) {
 	attribute := Attribute{
 		Optional: true,
@@ -50,5 +52,13 @@ func (opt *Options) OnAttribute(ele xml.StartElement, protoTree []interface{}) (
 	}
 
 	opt.Attribute = &attribute
+	return
+}
+
+// EndAttribute handles parsing event on the attribute end elements.
+func (opt *Options) EndAttribute(ele xml.EndElement, protoTree []interface{}) (err error) {
+	if opt.Attribute != nil && opt.ComplexType.Len() == 0 {
+		opt.ProtoTree = append(opt.ProtoTree, opt.Attribute)
+	}
 	return
 }

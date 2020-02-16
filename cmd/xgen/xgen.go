@@ -117,6 +117,7 @@ func main() {
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
 			ParseFileMap:        make(map[string][]interface{}),
+			ProtoTree:           make([]interface{}, 0),
 		})
 		if _, err = parser.Parse(); err != nil {
 			fmt.Println(err)

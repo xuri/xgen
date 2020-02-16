@@ -10,6 +10,9 @@ package xgen
 
 import "encoding/xml"
 
+// OnGroup handles parsing event on the group start elements. The group
+// element is used to define a group of elements to be used in complex type
+// definitions.
 func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err error) {
 	group := Group{}
 	for _, attr := range ele.Attr {
@@ -46,6 +49,20 @@ func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err 
 	if opt.ComplexType.Len() > 0 {
 		opt.ComplexType.Peek().(*ComplexType).Groups = append(opt.ComplexType.Peek().(*ComplexType).Groups, group)
 		return
+	}
+	return
+}
+
+// EndGroup handles parsing event on the group end elements.
+func (opt *Options) EndGroup(ele xml.EndElement, protoTree []interface{}) (err error) {
+	if ele.Name.Local == opt.CurrentEle && opt.InGroup == 1 {
+		opt.ProtoTree = append(opt.ProtoTree, opt.Group)
+		opt.CurrentEle = ""
+		opt.InGroup--
+		opt.Group = nil
+	}
+	if ele.Name.Local == opt.CurrentEle {
+		opt.InGroup--
 	}
 	return
 }

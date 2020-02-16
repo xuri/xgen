@@ -10,6 +10,8 @@ package xgen
 
 import "encoding/xml"
 
+// OnSchema handles parsing event on the schema start elements. Schema is the
+// root element of every XML Schema.
 func (opt *Options) OnSchema(ele xml.StartElement, protoTree []interface{}) (err error) {
 	opt.prepareLocalNameNSMap(ele)
 	return

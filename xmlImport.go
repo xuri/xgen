@@ -10,6 +10,9 @@ package xgen
 
 import "encoding/xml"
 
+// OnImport handles parsing event on the import start elements. The list
+// element defines a simple type element as a list of values of a specified
+// data type.
 func (opt *Options) OnImport(ele xml.StartElement, protoTree []interface{}) (err error) {
 	opt.prepareNSSchemaLocationMap(ele)
 	return
