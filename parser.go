@@ -136,7 +136,7 @@ func (opt *Options) Parse() (err error) {
 // GetValueType convert XSD schema value type to the build-in type for the
 // given value and proto tree.
 func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueType string, err error) {
-	if buildType, ok := buildInTypes[trimNSPrefix(value)]; ok {
+	if buildType, ok := getBuildInTypeByLang(trimNSPrefix(value), opt.Lang); ok {
 		valueType = buildType
 		return
 	}

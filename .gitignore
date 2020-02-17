@@ -1,1 +1,1 @@
-test/go/output
+test/**/output

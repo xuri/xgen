@@ -20,10 +20,12 @@ import (
 var (
 	goSrcDir  = filepath.Join("test", "go")
 	goCodeDir = filepath.Join(goSrcDir, "output")
+	tsSrcDir  = filepath.Join("test", "ts")
+	tsCodeDir = filepath.Join(tsSrcDir, "output")
 	xsdSrcDir = filepath.Join("test", "xsd")
 )
 
-func TestParse(t *testing.T) {
+func TestParseGo(t *testing.T) {
 	err := PrepareOutputDir(goCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
@@ -52,7 +54,37 @@ func TestParse(t *testing.T) {
 
 			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
 		}
-
 	}
+}
 
+func TestParseTypeScript(t *testing.T) {
+	err := PrepareOutputDir(tsCodeDir)
+	assert.NoError(t, err)
+	files, err := GetFileList(xsdSrcDir)
+	for _, file := range files {
+		parser := NewParser(&Options{
+			FilePath:            file,
+			OutputDir:           tsCodeDir,
+			Lang:                "TypeScript",
+			LocalNameNSMap:      make(map[string]string),
+			NSSchemaLocationMap: make(map[string]string),
+			ParseFileList:       make(map[string]bool),
+			ParseFileMap:        make(map[string][]interface{}),
+			ProtoTree:           make([]interface{}, 0),
+		})
+		err = parser.Parse()
+		assert.NoError(t, err)
+		if filepath.Ext(file) == ".xsd" {
+			srcCode := filepath.Join(tsSrcDir, filepath.Base(file)+".ts")
+			genCode := filepath.Join(tsCodeDir, filepath.Base(file)+".ts")
+
+			srcFile, err := os.Stat(srcCode)
+			assert.NoError(t, err)
+
+			genFile, err := os.Stat(genCode)
+			assert.NoError(t, err)
+
+			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
+		}
+	}
 }

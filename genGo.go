@@ -50,13 +50,13 @@ func (gen *CodeGenerator) GenGo() error {
 		case *SimpleType:
 			if v.List {
 				if _, ok := structAST[v.Name]; !ok {
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+					filedType := genGoFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
-					content := fmt.Sprintf(" []%s\n", genFiledType(filedType))
+					content := fmt.Sprintf(" []%s\n", genGoFiledType(filedType))
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+					field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 					continue
 				}
 			}
@@ -67,19 +67,18 @@ func (gen *CodeGenerator) GenGo() error {
 						if memberType == "" { // fix order issue
 							memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 						}
-						content += fmt.Sprintf("\t%s\t%s\n", genFiledName(memberName), genFiledType(memberType))
+						content += fmt.Sprintf("\t%s\t%s\n", genGoFiledName(memberName), genGoFiledType(memberType))
 					}
 					content += "}\n"
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
-
+					field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 				}
 				continue
 			}
 			if _, ok := structAST[v.Name]; !ok {
-				content := fmt.Sprintf(" %s\n", genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
+				content := fmt.Sprintf(" %s\n", genGoFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 			}
 
 		case *ComplexType:
@@ -90,7 +89,7 @@ func (gen *CodeGenerator) GenGo() error {
 					if filedType == "time.Time" {
 						importTime = true
 					}
-					content += fmt.Sprintf("\t%s\t%s\n", genFiledName(attrGroup.Name), genFiledType(filedType))
+					content += fmt.Sprintf("\t%s\t%s\n", genGoFiledName(attrGroup.Name), genGoFiledType(filedType))
 				}
 
 				for _, attribute := range v.Attributes {
@@ -98,18 +97,18 @@ func (gen *CodeGenerator) GenGo() error {
 					if attribute.Optional {
 						optional = `,omitempty`
 					}
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+					filedType := genGoFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
-					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genFiledName(attribute.Name), filedType, attribute.Name, optional)
+					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFiledName(attribute.Name), filedType, attribute.Name, optional)
 				}
 				for _, group := range v.Groups {
 					var plural string
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genGoFiledName(group.Name), plural, genGoFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				for _, element := range v.Elements {
@@ -117,15 +116,15 @@ func (gen *CodeGenerator) GenGo() error {
 					if element.Plural {
 						plural = "[]"
 					}
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+					filedType := genGoFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s\"`\n", genFiledName(element.Name), plural, filedType, element.Name)
+					content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s\"`\n", genGoFiledName(element.Name), plural, filedType, element.Name)
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 			}
 
 		case *Group:
@@ -136,7 +135,7 @@ func (gen *CodeGenerator) GenGo() error {
 					if element.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(element.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genGoFiledName(element.Name), plural, genGoFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
 				}
 
 				for _, group := range v.Groups {
@@ -144,12 +143,12 @@ func (gen *CodeGenerator) GenGo() error {
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genGoFiledName(group.Name), plural, genGoFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 			}
 		case *AttributeGroup:
 			if _, ok := structAST[v.Name]; !ok {
@@ -159,11 +158,11 @@ func (gen *CodeGenerator) GenGo() error {
 					if attribute.Optional {
 						optional = `,omitempty`
 					}
-					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genFiledName(attribute.Name), genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), attribute.Name, optional)
+					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFiledName(attribute.Name), genGoFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), attribute.Name, optional)
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 
 			}
 		case *Element:
@@ -172,9 +171,9 @@ func (gen *CodeGenerator) GenGo() error {
 				if v.Plural {
 					plural = "[]"
 				}
-				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+				content := fmt.Sprintf("\t%s%s\n", plural, genGoFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 			}
 
 		case *Attribute:
@@ -183,9 +182,9 @@ func (gen *CodeGenerator) GenGo() error {
 				if v.Plural {
 					plural = "[]"
 				}
-				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+				content := fmt.Sprintf("\t%s%s\n", plural, genGoFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\ntype %s%s", genGoFiledName(v.Name), structAST[v.Name])
 			}
 		}
 	}
@@ -207,7 +206,7 @@ func (gen *CodeGenerator) GenGo() error {
 	return err
 }
 
-func genFiledName(name string) (filedName string) {
+func genGoFiledName(name string) (filedName string) {
 	for _, str := range strings.Split(name, ":") {
 		filedName += MakeFirstUpperCase(str)
 	}
@@ -220,7 +219,7 @@ func genFiledName(name string) (filedName string) {
 	return
 }
 
-func genFiledType(name string) string {
+func genGoFiledType(name string) string {
 	if _, ok := goBuildinType[name]; ok {
 		return name
 	}
