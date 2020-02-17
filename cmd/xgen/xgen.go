@@ -55,7 +55,7 @@ var SupportLang = map[string]bool{
 	"C":          false,
 	"Java":       false,
 	"Rust":       false,
-	"TypeScript": false,
+	"TypeScript": true,
 }
 
 // parseFlags parse flags of program.
@@ -113,6 +113,7 @@ func main() {
 		if err = xgen.NewParser(&xgen.Options{
 			FilePath:            file,
 			OutputDir:           cfg.O,
+			Lang:                cfg.Lang,
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),

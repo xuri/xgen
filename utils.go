@@ -12,6 +12,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 )
 
@@ -155,4 +156,18 @@ func MakeFirstUpperCase(s string) string {
 	rest := bts[1:]
 
 	return string(bytes.Join([][]byte{lc, rest}, nil))
+}
+
+// callFuncByName calls the only error return function with reflect by given
+// receiver, name and parameters.
+func callFuncByName(receiver interface{}, name string, params []reflect.Value) (err error) {
+	function := reflect.ValueOf(receiver).MethodByName(name)
+	if function.IsValid() {
+		rt := function.Call(params)
+		if !rt[0].IsNil() {
+			err = rt[0].Interface().(error)
+			return
+		}
+	}
+	return
 }

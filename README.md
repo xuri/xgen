@@ -10,7 +10,7 @@
 
 ## Introduction
 
-xgen is a library written in pure Go providing a set of functions that allow you to parse XSD (XML schema files). This library needs Go version 1.10 or later. The full API docs can be seen using go's built-in documentation tool, or online at [godoc.org](https://godoc.org/github.com/xuri/xgen).
+xgen is a library written in pure Go providing a set of functions that allow you to parse XSD (XML schema definition) files. This library needs Go version 1.10 or later. The full API docs can be seen using go's built-in documentation tool, or online at [godoc.org](https://godoc.org/github.com/xuri/xgen).
 
 `xgen` commands automatically compiles XML schema files into the multi-language type or class declarations code.
 
@@ -38,7 +38,11 @@ $ xgen [<flag> ...] <XSD file or directory> ...
    -v        Output version and exit
 ```
 
+## XSD (XML Schema Definition)
 
+XSD, a recommendation of the World Wide Web Consortium ([W3C](https://www.w3.org)), specifies how to formally describe the elements in an Extensible Markup Language ([XML](https://www.w3.org/TR/xml/)) document. It can be used by programmers to verify each piece of item content in a document. They can check if it adheres to the description of the element it is placed in.
+
+XSD can be used to express a set of rules to which an XML document must conform in order to be considered "valid" according to that schema. However, unlike most other schema languages, XSD was also designed with the intent that determination of a document's validity would produce a collection of information adhering to specific data types. Such a post-validation infoset can be useful in the development of XML document processing software.
 
 ## Contributing
 

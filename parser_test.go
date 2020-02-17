@@ -31,6 +31,7 @@ func TestParse(t *testing.T) {
 		parser := NewParser(&Options{
 			FilePath:            file,
 			OutputDir:           goCodeDir,
+			Lang:                "Go",
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),

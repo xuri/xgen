@@ -25,6 +25,7 @@ type Options struct {
 	FileDir             string
 	OutputDir           string
 	Extract             bool
+	Lang                string
 	LocalNameNSMap      map[string]string
 	NSSchemaLocationMap map[string]string
 	ParseFileList       map[string]bool
@@ -101,24 +102,14 @@ func (opt *Options) Parse() (err error) {
 
 			opt.InElement = element.Name.Local
 			funcName := fmt.Sprintf("On%s", MakeFirstUpperCase(opt.InElement))
-			onEleFunc := reflect.ValueOf(opt).MethodByName(funcName)
-			if onEleFunc.IsValid() {
-				rt := onEleFunc.Call([]reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)})
-				if !rt[0].IsNil() {
-					err = rt[0].Interface().(error)
-					return
-				}
+			if err = callFuncByName(opt, funcName, []reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)}); err != nil {
+				return
 			}
 
 		case xml.EndElement:
 			funcName := fmt.Sprintf("End%s", MakeFirstUpperCase(element.Name.Local))
-			onEleFunc := reflect.ValueOf(opt).MethodByName(funcName)
-			if onEleFunc.IsValid() {
-				rt := onEleFunc.Call([]reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)})
-				if !rt[0].IsNil() {
-					err = rt[0].Interface().(error)
-					return
-				}
+			if err = callFuncByName(opt, funcName, []reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)}); err != nil {
+				return
 			}
 		default:
 		}
@@ -129,7 +120,13 @@ func (opt *Options) Parse() (err error) {
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
 		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
-		if err = genCode(filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)), opt.ProtoTree); err != nil {
+		generator := &CodeGenerator{
+			Lang:      opt.Lang,
+			File:      filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)),
+			ProtoTree: opt.ProtoTree,
+		}
+		funcName := fmt.Sprintf("Gen%s", MakeFirstUpperCase(opt.Lang))
+		if err = callFuncByName(generator, funcName, []reflect.Value{}); err != nil {
 			return
 		}
 	}
@@ -167,6 +164,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			FilePath:            xsdFile,
 			OutputDir:           opt.OutputDir,
 			Extract:             false,
+			Lang:                opt.Lang,
 			LocalNameNSMap:      opt.LocalNameNSMap,
 			NSSchemaLocationMap: opt.NSSchemaLocationMap,
 			ParseFileList:       opt.ParseFileList,
@@ -186,6 +184,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		FilePath:            xsdFile,
 		OutputDir:           opt.OutputDir,
 		Extract:             true,
+		Lang:                opt.Lang,
 		LocalNameNSMap:      opt.LocalNameNSMap,
 		NSSchemaLocationMap: opt.NSSchemaLocationMap,
 		ParseFileList:       opt.ParseFileList,

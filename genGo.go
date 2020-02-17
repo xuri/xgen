@@ -15,6 +15,14 @@ import (
 	"strings"
 )
 
+// CodeGenerator holds code generator overrides and runtime data that are used
+// when generate code from proto tree.
+type CodeGenerator struct {
+	Lang      string
+	File      string
+	ProtoTree []interface{}
+}
+
 var goBuildinType = map[string]bool{
 	"string":    true,
 	"[]string":  true,
@@ -31,16 +39,18 @@ var goBuildinType = map[string]bool{
 	"uint64":    true,
 }
 
-func genCode(file string, XSDSchema []interface{}) error {
+// GenTypeScript generate Go programming language source code for XML schema
+// definition files.
+func (gen *CodeGenerator) GenGo() error {
 	structAST := map[string]string{}
 	var field string
 	var importTime bool
-	for _, ele := range XSDSchema {
+	for _, ele := range gen.ProtoTree {
 		switch v := ele.(type) {
 		case *SimpleType:
 			if v.List {
 				if _, ok := structAST[v.Name]; !ok {
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), XSDSchema))
+					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
@@ -55,7 +65,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					content := " struct {\n"
 					for memberName, memberType := range v.MemberTypes {
 						if memberType == "" { // fix order issue
-							memberType = getBasefromSimpleType(memberName, XSDSchema)
+							memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 						}
 						content += fmt.Sprintf("\t%s\t%s\n", genFiledName(memberName), genFiledType(memberType))
 					}
@@ -67,7 +77,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 				continue
 			}
 			if _, ok := structAST[v.Name]; !ok {
-				content := fmt.Sprintf(" %s\n", genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), XSDSchema)))
+				content := fmt.Sprintf(" %s\n", genFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
 				structAST[v.Name] = content
 				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
 			}
@@ -76,7 +86,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 			if _, ok := structAST[v.Name]; !ok {
 				content := " struct {\n"
 				for _, attrGroup := range v.AttributeGroup {
-					filedType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), XSDSchema)
+					filedType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
 					if filedType == "time.Time" {
 						importTime = true
 					}
@@ -88,7 +98,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if attribute.Optional {
 						optional = `,omitempty`
 					}
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), XSDSchema))
+					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
@@ -99,7 +109,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), XSDSchema)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				for _, element := range v.Elements {
@@ -107,7 +117,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if element.Plural {
 						plural = "[]"
 					}
-					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), XSDSchema))
+					filedType := genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 					if filedType == "time.Time" {
 						importTime = true
 					}
@@ -126,7 +136,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if element.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(element.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), XSDSchema)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(element.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
 				}
 
 				for _, group := range v.Groups {
@@ -134,7 +144,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), XSDSchema)))
+					content += fmt.Sprintf("\t%s\t%s%s\n", genFiledName(group.Name), plural, genFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				content += "}\n"
@@ -149,7 +159,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 					if attribute.Optional {
 						optional = `,omitempty`
 					}
-					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genFiledName(attribute.Name), genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), XSDSchema)), attribute.Name, optional)
+					content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genFiledName(attribute.Name), genFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), attribute.Name, optional)
 				}
 				content += "}\n"
 				structAST[v.Name] = content
@@ -162,7 +172,7 @@ func genCode(file string, XSDSchema []interface{}) error {
 				if v.Plural {
 					plural = "[]"
 				}
-				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), XSDSchema)))
+				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
 				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
 			}
@@ -173,13 +183,13 @@ func genCode(file string, XSDSchema []interface{}) error {
 				if v.Plural {
 					plural = "[]"
 				}
-				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), XSDSchema)))
+				content := fmt.Sprintf("\t%s%s\n", plural, genFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
 				field += fmt.Sprintf("\ntype %s%s", genFiledName(v.Name), structAST[v.Name])
 			}
 		}
 	}
-	f, err := os.Create(file + ".go")
+	f, err := os.Create(gen.File + ".go")
 	if err != nil {
 		return err
 	}
