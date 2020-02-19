@@ -39,7 +39,7 @@ var goBuildinType = map[string]bool{
 	"uint64":    true,
 }
 
-// GenTypeScript generate Go programming language source code for XML schema
+// GenGo generate Go programming language source code for XML schema
 // definition files.
 func (gen *CodeGenerator) GenGo() error {
 	structAST := map[string]string{}

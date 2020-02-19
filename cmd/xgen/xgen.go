@@ -52,7 +52,7 @@ var Cfg = Config{
 // SupportLang defines supported language types.
 var SupportLang = map[string]bool{
 	"Go":         true,
-	"C":          false,
+	"C":          true,
 	"Java":       false,
 	"Rust":       false,
 	"TypeScript": true,
@@ -89,7 +89,7 @@ func parseFlags() *Config {
 		Cfg.O = *oPtr
 	}
 	if ok := SupportLang[Cfg.Lang]; !ok {
-		fmt.Println("not support language", Cfg.Lang)
+		fmt.Println("unsupport language", Cfg.Lang)
 		os.Exit(1)
 	}
 	if *pkgPtr != "" {
