@@ -33,10 +33,10 @@ func (gen *CodeGenerator) GenTypeScript() error {
 		case *SimpleType:
 			if v.List {
 				if _, ok := structAST[v.Name]; !ok {
-					filedType := genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-					content := fmt.Sprintf(" Array<%s>\n", genTypeScriptFiledType(filedType))
+					fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+					content := fmt.Sprintf(" Array<%s>\n", genTypeScriptFieldType(fieldType))
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+					field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 					continue
 				}
 			}
@@ -47,26 +47,26 @@ func (gen *CodeGenerator) GenTypeScript() error {
 						if memberType == "" { // fix order issue
 							memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 						}
-						content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFiledName(memberName), genTypeScriptFiledType(memberType))
+						content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(memberName), genTypeScriptFieldType(memberType))
 					}
 					content += "}\n"
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+					field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 				}
 				continue
 			}
 			if _, ok := structAST[v.Name]; !ok {
-				content := fmt.Sprintf(" %s;\n", genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
+				content := fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 
 		case *ComplexType:
 			if _, ok := structAST[v.Name]; !ok {
 				content := " {\n"
 				for _, attrGroup := range v.AttributeGroup {
-					filedType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
-					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFiledName(attrGroup.Name), genTypeScriptFiledType(filedType))
+					fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
+					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(attrGroup.Name), genTypeScriptFieldType(fieldType))
 				}
 
 				for _, attribute := range v.Attributes {
@@ -74,28 +74,28 @@ func (gen *CodeGenerator) GenTypeScript() error {
 					if attribute.Optional {
 						optional = ` | null`
 					}
-					filedType := genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
-					content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFiledName(attribute.Name), filedType, optional)
+					fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+					content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name), fieldType, optional)
 				}
 				for _, group := range v.Groups {
 					if group.Plural {
-						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFiledName(group.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 						continue
 					}
-					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFiledName(group.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				for _, element := range v.Elements {
-					filedType := genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+					fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 					if element.Plural {
-						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFiledName(element.Name), filedType)
+						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
 						continue
 					}
-					content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFiledName(element.Name), filedType)
+					content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 
 		case *Group:
@@ -103,23 +103,23 @@ func (gen *CodeGenerator) GenTypeScript() error {
 				content := " {\n"
 				for _, element := range v.Elements {
 					if element.Plural {
-						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFiledName(element.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
+						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
 						continue
 					}
-					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFiledName(element.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
 				}
 
 				for _, group := range v.Groups {
 					if group.Plural {
-						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFiledName(group.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+						content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 						continue
 					}
-					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFiledName(group.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+					content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
 				}
 
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 
 		case *AttributeGroup:
@@ -130,32 +130,32 @@ func (gen *CodeGenerator) GenTypeScript() error {
 					if attribute.Optional {
 						optional = ` | null`
 					}
-					content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFiledName(attribute.Name), genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), optional)
+					content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), optional)
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 
 		case *Element:
 			if _, ok := structAST[v.Name]; !ok {
 				if v.Plural {
-					structAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+					structAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				} else {
-					structAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+					structAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				}
 
-				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 
 		case *Attribute:
 			if _, ok := structAST[v.Name]; !ok {
 				if v.Plural {
-					structAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+					structAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				} else {
-					structAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
+					structAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				}
-				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFiledName(v.Name), structAST[v.Name])
+				field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 			}
 		}
 	}
@@ -170,30 +170,30 @@ func (gen *CodeGenerator) GenTypeScript() error {
 
 }
 
-func genTypeScriptFiledName(name string) (filedName string) {
+func genTypeScriptFieldName(name string) (fieldName string) {
 	for _, str := range strings.Split(name, ":") {
-		filedName += MakeFirstUpperCase(str)
+		fieldName += MakeFirstUpperCase(str)
 	}
 	var tmp string
-	for _, str := range strings.Split(filedName, ".") {
+	for _, str := range strings.Split(fieldName, ".") {
 		tmp += MakeFirstUpperCase(str)
 	}
-	filedName = tmp
-	filedName = strings.Replace(filedName, "-", "", -1)
+	fieldName = tmp
+	fieldName = strings.Replace(fieldName, "-", "", -1)
 	return
 }
 
-func genTypeScriptFiledType(name string) string {
+func genTypeScriptFieldType(name string) string {
 	if _, ok := TypeScriptBuildInType[name]; ok {
 		return name
 	}
-	var filedType string
+	var fieldType string
 	for _, str := range strings.Split(name, ".") {
-		filedType += MakeFirstUpperCase(str)
+		fieldType += MakeFirstUpperCase(str)
 	}
-	filedType = MakeFirstUpperCase(strings.Replace(filedType, "-", "", -1))
-	if filedType != "" {
-		return filedType
+	fieldType = MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1))
+	if fieldType != "" {
+		return fieldType
 	}
 	return "any"
 }

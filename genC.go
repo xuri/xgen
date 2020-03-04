@@ -19,7 +19,7 @@ var CBuildInType = map[string]bool{
 	"char":           true,
 	"unsigned char":  true,
 	"signed char":    true,
-	"char[]":         true, // char[] will be flat to 'char filed_name[]'
+	"char[]":         true, // char[] will be flat to 'char field_name[]'
 	"float":          true,
 	"double":         true,
 	"long double":    true,
@@ -43,8 +43,8 @@ func (gen *CodeGenerator) GenC() error {
 		case *SimpleType:
 			if v.List {
 				if _, ok := structAST[v.Name]; !ok {
-					filedType := genCFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-					content := fmt.Sprintf("%s %s[];\n", genCFiledType(filedType), genCFiledName(v.Name))
+					fieldType := genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+					content := fmt.Sprintf("%s %s[];\n", genCFieldType(fieldType), genCFieldName(v.Name))
 					structAST[v.Name] = content
 					field += fmt.Sprintf("\ntypedef %s", structAST[v.Name])
 					continue
@@ -57,34 +57,34 @@ func (gen *CodeGenerator) GenC() error {
 						if memberType == "" { // fix order issue
 							memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 						}
-						var plural, filedType string
+						var plural, fieldType string
 						var ok bool
-						if filedType, ok = innerArray(genCFiledType(memberType)); ok {
+						if fieldType, ok = innerArray(genCFieldType(memberType)); ok {
 							plural = "[]"
 						}
-						content += fmt.Sprintf("\t%s %s%s;\n", filedType, genCFiledName(memberName), plural)
+						content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(memberName), plural)
 					}
 					content += "}"
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFiledName(v.Name))
+					field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFieldName(v.Name))
 				}
 				continue
 			}
 			if _, ok := structAST[v.Name]; !ok {
-				var plural, filedType string
+				var plural, fieldType string
 				var ok bool
-				if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))); ok {
+				if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))); ok {
 					plural = "[]"
 				}
-				structAST[v.Name] = fmt.Sprintf("%s %s%s", filedType, genCFiledName(v.Name), plural)
+				structAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
 				field += fmt.Sprintf("\ntypedef %s;\n", structAST[v.Name])
 			}
 		case *ComplexType:
 			if _, ok := structAST[v.Name]; !ok {
 				content := "struct {\n"
 				for _, attrGroup := range v.AttributeGroup {
-					filedType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
-					content += fmt.Sprintf("\t%s %s;\n", genCFiledType(filedType), genCFiledName(attrGroup.Name))
+					fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
+					content += fmt.Sprintf("\t%s %s;\n", genCFieldType(fieldType), genCFieldName(attrGroup.Name))
 				}
 
 				for _, attribute := range v.Attributes {
@@ -92,12 +92,12 @@ func (gen *CodeGenerator) GenC() error {
 					if attribute.Optional {
 						optional = `, optional`
 					}
-					var plural, filedType string
+					var plural, fieldType string
 					var ok bool
-					if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
+					if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", filedType, genCFiledName(attribute.Name), plural, optional)
+					content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name), plural, optional)
 				}
 
 				for _, group := range v.Groups {
@@ -105,20 +105,20 @@ func (gen *CodeGenerator) GenC() error {
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %s%s;\n", genCFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFiledName(group.Name), plural)
+					content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name), plural)
 				}
 
 				for _, element := range v.Elements {
-					var plural, filedType string
+					var plural, fieldType string
 					var ok bool
-					if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))); ok || element.Plural {
+					if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))); ok || element.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %s%s;\n", filedType, genCFiledName(element.Name), plural)
+					content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(element.Name), plural)
 				}
 				content += "}"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFiledName(v.Name))
+				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFieldName(v.Name))
 			}
 		case *Group:
 			if _, ok := structAST[v.Name]; !ok {
@@ -128,7 +128,7 @@ func (gen *CodeGenerator) GenC() error {
 					if element.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %s%s;\n", genCFiledType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)), genCFiledName(element.Name), plural)
+					content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)), genCFieldName(element.Name), plural)
 				}
 
 				for _, group := range v.Groups {
@@ -136,49 +136,49 @@ func (gen *CodeGenerator) GenC() error {
 					if group.Plural {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %s%s;\n", genCFiledType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFiledName(group.Name), plural)
+					content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name), plural)
 				}
 
 				content += "}"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFiledName(v.Name))
+				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFieldName(v.Name))
 			}
 		case *AttributeGroup:
 			if _, ok := structAST[v.Name]; !ok {
 				content := "struct {\n"
 				for _, attribute := range v.Attributes {
-					var optional, plural, filedType string
+					var optional, plural, fieldType string
 					var ok bool
 					if attribute.Optional {
 						optional = `, optional`
 					}
-					if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
+					if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
 						plural = "[]"
 					}
-					content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", filedType, genCFiledName(attribute.Name), plural, optional)
+					content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name), plural, optional)
 				}
 				content += "}"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFiledName(v.Name))
+				field += fmt.Sprintf("\ntypedef %s %s;\n", structAST[v.Name], genCFieldName(v.Name))
 			}
 		case *Element:
 			if _, ok := structAST[v.Name]; !ok {
-				var plural, filedType string
+				var plural, fieldType string
 				var ok bool
-				if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
+				if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
 					plural = "[]"
 				}
-				structAST[v.Name] = fmt.Sprintf("%s %s%s", filedType, genCFiledName(v.Name), plural)
+				structAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
 				field += fmt.Sprintf("\ntypedef %s;\n", structAST[v.Name])
 			}
 		case *Attribute:
 			if _, ok := structAST[v.Name]; !ok {
-				var plural, filedType string
+				var plural, fieldType string
 				var ok bool
-				if filedType, ok = innerArray(genCFiledType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
+				if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
 					plural = "[]"
 				}
-				structAST[v.Name] = fmt.Sprintf("%s %s%s", filedType, genCFiledName(v.Name), plural)
+				structAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
 				field += fmt.Sprintf("\ntypedef %s;\n", structAST[v.Name])
 			}
 		}
@@ -201,30 +201,30 @@ func innerArray(dataType string) (string, bool) {
 	return dataType, false
 }
 
-func genCFiledName(name string) (filedName string) {
+func genCFieldName(name string) (fieldName string) {
 	for _, str := range strings.Split(name, ":") {
-		filedName += MakeFirstUpperCase(str)
+		fieldName += MakeFirstUpperCase(str)
 	}
 	var tmp string
-	for _, str := range strings.Split(filedName, ".") {
+	for _, str := range strings.Split(fieldName, ".") {
 		tmp += MakeFirstUpperCase(str)
 	}
-	filedName = tmp
-	filedName = strings.Replace(filedName, "-", "", -1)
+	fieldName = tmp
+	fieldName = strings.Replace(fieldName, "-", "", -1)
 	return
 }
 
-func genCFiledType(name string) string {
+func genCFieldType(name string) string {
 	if _, ok := CBuildInType[name]; ok {
 		return name
 	}
-	var filedType string
+	var fieldType string
 	for _, str := range strings.Split(name, ".") {
-		filedType += MakeFirstUpperCase(str)
+		fieldType += MakeFirstUpperCase(str)
 	}
-	filedType = MakeFirstUpperCase(strings.Replace(filedType, "-", "", -1))
-	if filedType != "" {
-		return filedType
+	fieldType = MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1))
+	if fieldType != "" {
+		return fieldType
 	}
 	return "void"
 }

@@ -53,7 +53,7 @@ var Cfg = Config{
 var SupportLang = map[string]bool{
 	"Go":         true,
 	"C":          true,
-	"Java":       false,
+	"Java":       true,
 	"Rust":       false,
 	"TypeScript": true,
 }
