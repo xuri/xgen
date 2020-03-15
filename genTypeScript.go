@@ -34,9 +34,9 @@ func (gen *CodeGenerator) GenTypeScript() error {
 			if v.List {
 				if _, ok := structAST[v.Name]; !ok {
 					fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-					content := fmt.Sprintf(" Array<%s>\n", genTypeScriptFieldType(fieldType))
+					content := fmt.Sprintf(" = Array<%s>;\n", genTypeScriptFieldType(fieldType))
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
+					field += fmt.Sprintf("\nexport type %s%s", genTypeScriptFieldName(v.Name), structAST[v.Name])
 					continue
 				}
 			}

@@ -54,7 +54,7 @@ var SupportLang = map[string]bool{
 	"Go":         true,
 	"C":          true,
 	"Java":       true,
-	"Rust":       false,
+	"Rust":       true,
 	"TypeScript": true,
 }
 
