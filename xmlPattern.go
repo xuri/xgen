@@ -13,8 +13,8 @@ import "encoding/xml"
 // EndPattern handles parsing event on the pattern end elements. Pattern
 // defines the exact sequence of characters that are acceptable.
 func (opt *Options) EndPattern(ele xml.EndElement, protoTree []interface{}) (err error) {
-	if opt.Attribute != nil && opt.SimpleType.Peek() != nil {
-		opt.Attribute.Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, opt.ProtoTree)
+	if opt.Attribute.Len() > 0 && opt.SimpleType.Peek() != nil {
+		opt.Attribute.Peek().(*Attribute).Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, opt.ProtoTree)
 		if err != nil {
 			return
 		}

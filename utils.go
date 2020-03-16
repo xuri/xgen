@@ -10,6 +10,9 @@ package xgen
 
 import (
 	"bytes"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -187,4 +190,39 @@ func callFuncByName(receiver interface{}, name string, params []reflect.Value) (
 		}
 	}
 	return
+}
+
+// isValidUrl tests a string to determine if it is a well-structured url or
+// not.
+func isValidURL(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
+func fetchSchema(URL string) ([]byte, error) {
+	var body []byte
+	var client http.Client
+	var err error
+	resp, err := client.Get(URL)
+	if err != nil {
+		return body, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return body, err
+		}
+	}
+	return body, err
 }

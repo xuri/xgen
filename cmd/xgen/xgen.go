@@ -119,8 +119,9 @@ func main() {
 			ParseFileList:       make(map[string]bool),
 			ParseFileMap:        make(map[string][]interface{}),
 			ProtoTree:           make([]interface{}, 0),
+			RemoteSchema:        make(map[string][]byte),
 		}).Parse(); err != nil {
-			fmt.Println(err)
+			fmt.Printf("process error on %s: %s\r\n", file, err.Error())
 			os.Exit(1)
 		}
 	}

@@ -51,8 +51,8 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 	}
 
 	if opt.InGroup > 0 {
-		if opt.Group != nil {
-			opt.Group.Elements = append(opt.Group.Elements, e)
+		if opt.Group.Len() > 0 {
+			opt.Group.Peek().(*Group).Elements = append(opt.Group.Peek().(*Group).Elements, e)
 		}
 		return
 	}

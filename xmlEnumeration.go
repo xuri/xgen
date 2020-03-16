@@ -13,8 +13,8 @@ import "encoding/xml"
 // EndEnumeration handles parsing event on the enumeration end elements.
 // Enumeration defines a list of acceptable values.
 func (opt *Options) EndEnumeration(ele xml.EndElement, protoTree []interface{}) (err error) {
-	if opt.Attribute != nil && opt.SimpleType.Peek() != nil {
-		if opt.Attribute.Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, opt.ProtoTree); err != nil {
+	if opt.Attribute.Len() > 0 && opt.SimpleType.Peek() != nil {
+		if opt.Attribute.Peek().(*Attribute).Type, err = opt.GetValueType(opt.SimpleType.Pop().(*SimpleType).Base, opt.ProtoTree); err != nil {
 			return
 		}
 		opt.CurrentEle = ""

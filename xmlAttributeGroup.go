@@ -31,7 +31,7 @@ func (opt *Options) OnAttributeGroup(ele xml.StartElement, protoTree []interface
 	if opt.ComplexType.Len() == 0 {
 		opt.InAttributeGroup = true
 		opt.CurrentEle = opt.InElement
-		opt.AttributeGroup = &attributeGroup
+		opt.AttributeGroup.Push(&attributeGroup)
 		return
 	}
 
@@ -45,10 +45,9 @@ func (opt *Options) OnAttributeGroup(ele xml.StartElement, protoTree []interface
 // EndAttributeGroup handles parsing event on the attributeGroup end elements.
 func (opt *Options) EndAttributeGroup(ele xml.EndElement, protoTree []interface{}) (err error) {
 	if ele.Name.Local == opt.CurrentEle && opt.InAttributeGroup {
-		opt.ProtoTree = append(opt.ProtoTree, opt.AttributeGroup)
+		opt.ProtoTree = append(opt.ProtoTree, opt.AttributeGroup.Pop())
 		opt.CurrentEle = ""
 		opt.InAttributeGroup = false
-		opt.AttributeGroup = nil
 	}
 	return
 }

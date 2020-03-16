@@ -31,6 +31,7 @@ type Options struct {
 	ParseFileList       map[string]bool
 	ParseFileMap        map[string][]interface{}
 	ProtoTree           []interface{}
+	RemoteSchema        map[string][]byte
 
 	InElement        string
 	CurrentEle       string
@@ -41,9 +42,9 @@ type Options struct {
 	SimpleType     *Stack
 	ComplexType    *Stack
 	Element        *Stack
-	Attribute      *Attribute
-	Group          *Group
-	AttributeGroup *AttributeGroup
+	Attribute      *Stack
+	Group          *Stack
+	AttributeGroup *Stack
 }
 
 // NewParser creates a new parser options for the Parse. Useful for XML schema
@@ -85,9 +86,9 @@ func (opt *Options) Parse() (err error) {
 	opt.SimpleType = NewStack()
 	opt.ComplexType = NewStack()
 	opt.Element = NewStack()
-	opt.Attribute = nil
-	opt.Group = nil
-	opt.AttributeGroup = nil
+	opt.Attribute = NewStack()
+	opt.Group = NewStack()
+	opt.AttributeGroup = NewStack()
 
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.CharsetReader = charset.NewReaderLabel
@@ -148,6 +149,9 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		return
 	}
 	schemaLocation := opt.NSSchemaLocationMap[opt.parseNS(value)]
+	if isValidURL(schemaLocation) {
+		return
+	}
 	xsdFile := filepath.Join(opt.FileDir, schemaLocation)
 	var fi os.FileInfo
 	fi, err = os.Stat(xsdFile)

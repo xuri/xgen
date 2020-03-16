@@ -8,9 +8,7 @@
 
 package xgen
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
 func (opt *Options) prepareLocalNameNSMap(element xml.StartElement) {
 	for _, ele := range element.Attr {
@@ -28,6 +26,17 @@ func (opt *Options) prepareNSSchemaLocationMap(element xml.StartElement) {
 			currentNS = ele.Value
 		}
 		if ele.Name.Local == "schemaLocation" {
+			if _, ok := opt.NSSchemaLocationMap[currentNS]; ok {
+				continue
+			}
+			if isValidURL(ele.Value) {
+				continue
+				// TODO: fetch remote schema
+				// var err error
+				// if opt.RemoteSchema[ele.Value], err = fetchSchema(ele.Value); err != nil {
+				// 	continue
+				// }
+			}
 			opt.NSSchemaLocationMap[currentNS] = ele.Value
 		}
 	}

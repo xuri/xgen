@@ -36,12 +36,12 @@ func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err 
 		if opt.InGroup == 0 {
 			opt.InGroup++
 			opt.CurrentEle = opt.InElement
-			opt.Group = &group
+			opt.Group.Push(&group)
 			return
 		}
 		if opt.InGroup > 0 {
 			opt.InGroup++
-			opt.Group.Groups = append(opt.Group.Groups, group)
+			opt.Group.Peek().(*Group).Groups = append(opt.Group.Peek().(*Group).Groups, group)
 			return
 		}
 
@@ -56,10 +56,9 @@ func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err 
 // EndGroup handles parsing event on the group end elements.
 func (opt *Options) EndGroup(ele xml.EndElement, protoTree []interface{}) (err error) {
 	if ele.Name.Local == opt.CurrentEle && opt.InGroup == 1 {
-		opt.ProtoTree = append(opt.ProtoTree, opt.Group)
+		opt.ProtoTree = append(opt.ProtoTree, opt.Group.Pop())
 		opt.CurrentEle = ""
 		opt.InGroup--
-		opt.Group = nil
 	}
 	if ele.Name.Local == opt.CurrentEle {
 		opt.InGroup--

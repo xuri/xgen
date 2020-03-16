@@ -17,6 +17,9 @@ func (opt *Options) OnSimpleType(ele xml.StartElement, protoTree []interface{}) 
 	if opt.SimpleType.Len() == 0 {
 		opt.SimpleType.Push(&SimpleType{})
 	}
+	if opt.CurrentEle == "attributeGroup" {
+		return
+	}
 	opt.CurrentEle = opt.InElement
 	for _, attr := range ele.Attr {
 		if attr.Name.Local == "name" {
