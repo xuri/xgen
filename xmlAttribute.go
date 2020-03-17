@@ -44,13 +44,6 @@ func (opt *Options) OnAttribute(ele xml.StartElement, protoTree []interface{}) (
 		return
 	}
 
-	if opt.InAttributeGroup {
-		if opt.AttributeGroup.Len() > 0 {
-			opt.AttributeGroup.Peek().(*AttributeGroup).Attributes = append(opt.AttributeGroup.Peek().(*AttributeGroup).Attributes, attribute)
-		}
-		return
-	}
-
 	opt.Attribute.Push(&attribute)
 	return
 }
@@ -58,6 +51,10 @@ func (opt *Options) OnAttribute(ele xml.StartElement, protoTree []interface{}) (
 // EndAttribute handles parsing event on the attribute end elements.
 func (opt *Options) EndAttribute(ele xml.EndElement, protoTree []interface{}) (err error) {
 	if opt.Attribute.Len() == 0 {
+		return
+	}
+	if opt.AttributeGroup.Len() > 0 {
+		opt.AttributeGroup.Peek().(*AttributeGroup).Attributes = append(opt.AttributeGroup.Peek().(*AttributeGroup).Attributes, *opt.Attribute.Pop().(*Attribute))
 		return
 	}
 	if opt.ComplexType.Len() == 0 {

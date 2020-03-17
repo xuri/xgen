@@ -25,8 +25,15 @@ jobs:
     - name: Build
       run: go build -v .
 
+    - name: Checkout test XSD
+      uses: actions/checkout@v2
+      with:
+        repository: xuri/xsd
+        token: ${{ secrets.GIT_TOKEN }}
+        path: data
+
     - name: Test
-      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+      run: go test -v -timeout 60m -coverprofile=coverage.txt -covermode=atomic ./
 
     - name: Codecov
       uses: codecov/codecov-action@v1.0.2

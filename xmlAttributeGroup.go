@@ -44,7 +44,7 @@ func (opt *Options) OnAttributeGroup(ele xml.StartElement, protoTree []interface
 
 // EndAttributeGroup handles parsing event on the attributeGroup end elements.
 func (opt *Options) EndAttributeGroup(ele xml.EndElement, protoTree []interface{}) (err error) {
-	if ele.Name.Local == opt.CurrentEle && opt.InAttributeGroup {
+	if opt.AttributeGroup.Len() > 0 {
 		opt.ProtoTree = append(opt.ProtoTree, opt.AttributeGroup.Pop())
 		opt.CurrentEle = ""
 		opt.InAttributeGroup = false

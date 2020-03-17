@@ -18,13 +18,18 @@ import (
 )
 
 var (
-	cSrcDir   = filepath.Join("test", "c")
-	cCodeDir  = filepath.Join(cSrcDir, "output")
-	goSrcDir  = filepath.Join("test", "go")
-	goCodeDir = filepath.Join(goSrcDir, "output")
-	tsSrcDir  = filepath.Join("test", "ts")
-	tsCodeDir = filepath.Join(tsSrcDir, "output")
-	xsdSrcDir = filepath.Join("test", "xsd")
+	testDir     = "data"
+	cSrcDir     = filepath.Join(testDir, "c")
+	cCodeDir    = filepath.Join(cSrcDir, "output")
+	goSrcDir    = filepath.Join(testDir, "go")
+	goCodeDir   = filepath.Join(goSrcDir, "output")
+	tsSrcDir    = filepath.Join(testDir, "ts")
+	tsCodeDir   = filepath.Join(tsSrcDir, "output")
+	javaSrcDir  = filepath.Join(testDir, "java")
+	javaCodeDir = filepath.Join(javaSrcDir, "output")
+	rsSrcDir    = filepath.Join(testDir, "rs")
+	rsCodeDir   = filepath.Join(rsSrcDir, "output")
+	xsdSrcDir   = filepath.Join(testDir, "xsd")
 )
 
 func TestParseGo(t *testing.T) {
@@ -120,5 +125,45 @@ func TestParseC(t *testing.T) {
 
 			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
 		}
+	}
+}
+
+func TestParseJava(t *testing.T) {
+	err := PrepareOutputDir(javaCodeDir)
+	assert.NoError(t, err)
+	files, err := GetFileList(xsdSrcDir)
+	for _, file := range files {
+		parser := NewParser(&Options{
+			FilePath:            file,
+			OutputDir:           javaCodeDir,
+			Lang:                "Java",
+			LocalNameNSMap:      make(map[string]string),
+			NSSchemaLocationMap: make(map[string]string),
+			ParseFileList:       make(map[string]bool),
+			ParseFileMap:        make(map[string][]interface{}),
+			ProtoTree:           make([]interface{}, 0),
+		})
+		err = parser.Parse()
+		assert.NoError(t, err)
+	}
+}
+
+func TestParseRust(t *testing.T) {
+	err := PrepareOutputDir(rsCodeDir)
+	assert.NoError(t, err)
+	files, err := GetFileList(xsdSrcDir)
+	for _, file := range files {
+		parser := NewParser(&Options{
+			FilePath:            file,
+			OutputDir:           rsCodeDir,
+			Lang:                "Rust",
+			LocalNameNSMap:      make(map[string]string),
+			NSSchemaLocationMap: make(map[string]string),
+			ParseFileList:       make(map[string]bool),
+			ParseFileMap:        make(map[string][]interface{}),
+			ProtoTree:           make([]interface{}, 0),
+		})
+		err = parser.Parse()
+		assert.NoError(t, err)
 	}
 }
