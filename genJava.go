@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var JavaBuildInType = map[string]bool{
+var javaBuildInType = map[string]bool{
 	"Boolean":      true,
 	"Byte":         true,
 	"Character":    true,
@@ -198,7 +198,7 @@ func genJavaFieldName(name string) (fieldName string) {
 }
 
 func genJavaFieldType(name string) string {
-	if _, ok := JavaBuildInType[name]; ok {
+	if _, ok := javaBuildInType[name]; ok {
 		return name
 	}
 	var fieldType string

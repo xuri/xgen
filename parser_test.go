@@ -36,6 +36,7 @@ func TestParseGo(t *testing.T) {
 	err := PrepareOutputDir(goCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
+	assert.NoError(t, err)
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
@@ -68,6 +69,7 @@ func TestParseTypeScript(t *testing.T) {
 	err := PrepareOutputDir(tsCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
+	assert.NoError(t, err)
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
@@ -100,6 +102,7 @@ func TestParseC(t *testing.T) {
 	err := PrepareOutputDir(cCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
+	assert.NoError(t, err)
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
@@ -132,6 +135,7 @@ func TestParseJava(t *testing.T) {
 	err := PrepareOutputDir(javaCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
+	assert.NoError(t, err)
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
@@ -152,6 +156,7 @@ func TestParseRust(t *testing.T) {
 	err := PrepareOutputDir(rsCodeDir)
 	assert.NoError(t, err)
 	files, err := GetFileList(xsdSrcDir)
+	assert.NoError(t, err)
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,

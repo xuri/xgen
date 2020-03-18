@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var TypeScriptBuildInType = map[string]bool{
+var typeScriptBuildInType = map[string]bool{
 	"boolean":   true,
 	"number":    true,
 	"string":    true,
@@ -184,7 +184,7 @@ func genTypeScriptFieldName(name string) (fieldName string) {
 }
 
 func genTypeScriptFieldType(name string) string {
-	if _, ok := TypeScriptBuildInType[name]; ok {
+	if _, ok := typeScriptBuildInType[name]; ok {
 		return name
 	}
 	var fieldType string

@@ -56,7 +56,8 @@ func (gen *CodeGenerator) GenGo() error {
 					}
 					content := fmt.Sprintf(" []%s\n", genGoFieldType(fieldType))
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+					fieldName := genGoFieldName(v.Name)
+					field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 					continue
 				}
 			}
@@ -71,14 +72,16 @@ func (gen *CodeGenerator) GenGo() error {
 					}
 					content += "}\n"
 					structAST[v.Name] = content
-					field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+					fieldName := genGoFieldName(v.Name)
+					field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 				}
 				continue
 			}
 			if _, ok := structAST[v.Name]; !ok {
 				content := fmt.Sprintf(" %s\n", genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 			}
 
 		case *ComplexType:
@@ -124,7 +127,8 @@ func (gen *CodeGenerator) GenGo() error {
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 			}
 
 		case *Group:
@@ -148,7 +152,8 @@ func (gen *CodeGenerator) GenGo() error {
 
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 			}
 		case *AttributeGroup:
 			if _, ok := structAST[v.Name]; !ok {
@@ -162,7 +167,8 @@ func (gen *CodeGenerator) GenGo() error {
 				}
 				content += "}\n"
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 
 			}
 		case *Element:
@@ -173,7 +179,8 @@ func (gen *CodeGenerator) GenGo() error {
 				}
 				content := fmt.Sprintf("\t%s%s\n", plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 			}
 
 		case *Attribute:
@@ -184,7 +191,8 @@ func (gen *CodeGenerator) GenGo() error {
 				}
 				content := fmt.Sprintf("\t%s%s\n", plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 				structAST[v.Name] = content
-				field += fmt.Sprintf("\ntype %s%s", genGoFieldName(v.Name), structAST[v.Name])
+				fieldName := genGoFieldName(v.Name)
+				field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, structAST[v.Name])
 			}
 		}
 	}
@@ -217,6 +225,10 @@ func genGoFieldName(name string) (fieldName string) {
 	fieldName = tmp
 	fieldName = strings.Replace(strings.Replace(fieldName, "-", "", -1), "_", "", -1)
 	return
+}
+
+func genGoFieldComment(name string) string {
+	return fmt.Sprintf("\r\n// %s ...\r\n", name)
 }
 
 func genGoFieldType(name string) string {

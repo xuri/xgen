@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var CBuildInType = map[string]bool{
+var cBuildInType = map[string]bool{
 	"bool":           true,
 	"char":           true,
 	"unsigned char":  true,
@@ -215,7 +215,7 @@ func genCFieldName(name string) (fieldName string) {
 }
 
 func genCFieldType(name string) string {
-	if _, ok := CBuildInType[name]; ok {
+	if _, ok := cBuildInType[name]; ok {
 		return name
 	}
 	var fieldType string

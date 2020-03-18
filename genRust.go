@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-var RustBuildinType = map[string]bool{
+var rustBuildinType = map[string]bool{
 	"i8":        true,
 	"i16":       true,
 	"i32":       true,
@@ -199,7 +199,7 @@ func genRustFieldName(name string) (fieldName string) {
 }
 
 func genRustFieldType(name string) string {
-	if _, ok := RustBuildinType[name]; ok {
+	if _, ok := rustBuildinType[name]; ok {
 		return name
 	}
 	var fieldType string
