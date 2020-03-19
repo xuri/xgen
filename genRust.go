@@ -11,6 +11,7 @@ package xgen
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -39,135 +40,12 @@ var rustBuildinType = map[string]bool{
 // GenRust generate Go programming language source code for XML schema
 // definition files.
 func (gen *CodeGenerator) GenRust() error {
-	structAST := map[string]string{}
-	var field string
 	for _, ele := range gen.ProtoTree {
-		switch v := ele.(type) {
-		case *SimpleType:
-			if v.List {
-				if _, ok := structAST[v.Name]; !ok {
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-					content := fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, genRustFieldName(v.Name), fieldType)
-					structAST[v.Name] = content
-					field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-					continue
-				}
-			}
-			if v.Union && len(v.MemberTypes) > 0 {
-				if _, ok := structAST[v.Name]; !ok {
-					var content string
-					for memberName, memberType := range v.MemberTypes {
-						if memberType == "" { // fix order issue
-							memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
-						}
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, genRustFieldName(memberName), genRustFieldType(memberType))
-					}
-					structAST[v.Name] = content
-					field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-				}
-				continue
-			}
-			if _, ok := structAST[v.Name]; !ok {
-				fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-				content := fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, genRustFieldName(v.Name), fieldType)
-				structAST[v.Name] = content
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-			}
-
-		case *ComplexType:
-			if _, ok := structAST[v.Name]; !ok {
-				var content string
-				for _, attrGroup := range v.AttributeGroup {
-					fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
-					content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attrGroup.Name, genRustFieldName(attrGroup.Name), genRustFieldType(fieldType))
-				}
-
-				for _, attribute := range v.Attributes {
-					// TODO: check attribute.Optional
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
-					content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attribute.Name, genRustFieldName(attribute.Name), fieldType)
-				}
-				for _, group := range v.Groups {
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
-					fieldName := genRustFieldName(group.Name)
-					if group.Plural {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", group.Name, fieldName, fieldType)
-					} else {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", group.Name, fieldName, fieldType)
-					}
-				}
-				for _, element := range v.Elements {
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
-					fieldName := genRustFieldName(element.Name)
-					if element.Plural {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", element.Name, fieldName, fieldType)
-					} else {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", element.Name, fieldName, fieldType)
-					}
-				}
-				structAST[v.Name] = content
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-			}
-
-		case *Group:
-			if _, ok := structAST[v.Name]; !ok {
-				var content string
-				for _, element := range v.Elements {
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
-					fieldName := genRustFieldName(element.Name)
-					if v.Plural {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", element.Name, fieldName, fieldType)
-					} else {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", element.Name, fieldName, fieldType)
-					}
-				}
-				for _, group := range v.Groups {
-					fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
-					fieldName := genRustFieldName(group.Name)
-					if v.Plural {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", group.Name, fieldName, fieldType)
-					} else {
-						content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", group.Name, fieldName, fieldType)
-					}
-				}
-				structAST[v.Name] = content
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-			}
-		case *AttributeGroup:
-			if _, ok := structAST[v.Name]; !ok {
-				var content string
-				for _, attribute := range v.Attributes {
-					// TODO: check attribute.Optional
-					content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attribute.Name, genRustFieldName(attribute.Name), genRustFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)))
-				}
-				structAST[v.Name] = content
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), structAST[v.Name])
-
-			}
-		case *Element:
-			if _, ok := structAST[v.Name]; !ok {
-				fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
-				fieldName := genRustFieldName(v.Name)
-				if v.Plural {
-					structAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, fieldName, fieldType)
-				} else {
-					structAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, fieldName, fieldType)
-				}
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", fieldName, structAST[v.Name])
-			}
-
-		case *Attribute:
-			if _, ok := structAST[v.Name]; !ok {
-				fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
-				fieldName := genRustFieldName(v.Name)
-				if v.Plural {
-					structAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, fieldName, fieldType)
-				} else {
-					structAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, fieldName, fieldType)
-				}
-				field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", fieldName, structAST[v.Name])
-			}
+		if ele == nil {
+			continue
 		}
+		funcName := fmt.Sprintf("Rust%s", reflect.TypeOf(ele).String()[6:])
+		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
 	f, err := os.Create(gen.File + ".rs")
 	if err != nil {
@@ -180,7 +58,7 @@ extern crate serde;
 extern crate serde_xml_rs;
 
 use serde_xml_rs::from_reader;`
-	source := []byte(fmt.Sprintf("%s\n\n%s\n%s", copyright, extern, field))
+	source := []byte(fmt.Sprintf("%s\n\n%s\n%s", copyright, extern, gen.Field))
 	f.Write(source)
 	return err
 }
@@ -211,4 +89,151 @@ func genRustFieldType(name string) string {
 		return fieldType
 	}
 	return "char"
+}
+
+// RustSimpleType generates code for simple type XML schema in Rust language
+// syntax.
+func (gen *CodeGenerator) RustSimpleType(v *SimpleType) {
+	if v.List {
+		if _, ok := gen.StructAST[v.Name]; !ok {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+			content := fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, genRustFieldName(v.Name), fieldType)
+			gen.StructAST[v.Name] = content
+			gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+			return
+		}
+	}
+	if v.Union && len(v.MemberTypes) > 0 {
+		if _, ok := gen.StructAST[v.Name]; !ok {
+			var content string
+			for memberName, memberType := range v.MemberTypes {
+				if memberType == "" { // fix order issue
+					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
+				}
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, genRustFieldName(memberName), genRustFieldType(memberType))
+			}
+			gen.StructAST[v.Name] = content
+			gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+		}
+		return
+	}
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+		content := fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, genRustFieldName(v.Name), fieldType)
+		gen.StructAST[v.Name] = content
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+	}
+	return
+}
+
+// RustComplexType generates code for complex type XML schema in Rust language
+// syntax.
+func (gen *CodeGenerator) RustComplexType(v *ComplexType) {
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		var content string
+		for _, attrGroup := range v.AttributeGroup {
+			fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
+			content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attrGroup.Name, genRustFieldName(attrGroup.Name), genRustFieldType(fieldType))
+		}
+
+		for _, attribute := range v.Attributes {
+			// TODO: check attribute.Optional
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+			content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attribute.Name, genRustFieldName(attribute.Name), fieldType)
+		}
+		for _, group := range v.Groups {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
+			fieldName := genRustFieldName(group.Name)
+			if group.Plural {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", group.Name, fieldName, fieldType)
+			} else {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", group.Name, fieldName, fieldType)
+			}
+		}
+		for _, element := range v.Elements {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+			fieldName := genRustFieldName(element.Name)
+			if element.Plural {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", element.Name, fieldName, fieldType)
+			} else {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", element.Name, fieldName, fieldType)
+			}
+		}
+		gen.StructAST[v.Name] = content
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+	}
+	return
+}
+
+// RustGroup generates code for group XML schema in Rust language syntax.
+func (gen *CodeGenerator) RustGroup(v *Group) {
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		var content string
+		for _, element := range v.Elements {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+			fieldName := genRustFieldName(element.Name)
+			if v.Plural {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", element.Name, fieldName, fieldType)
+			} else {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", element.Name, fieldName, fieldType)
+			}
+		}
+		for _, group := range v.Groups {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
+			fieldName := genRustFieldName(group.Name)
+			if v.Plural {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", group.Name, fieldName, fieldType)
+			} else {
+				content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", group.Name, fieldName, fieldType)
+			}
+		}
+		gen.StructAST[v.Name] = content
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+	}
+	return
+}
+
+// RustAttributeGroup generates code for attribute group XML schema in Rust language
+// syntax.
+func (gen *CodeGenerator) RustAttributeGroup(v *AttributeGroup) {
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		var content string
+		for _, attribute := range v.Attributes {
+			// TODO: check attribute.Optional
+			content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", attribute.Name, genRustFieldName(attribute.Name), genRustFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)))
+		}
+		gen.StructAST[v.Name] = content
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", genRustFieldName(v.Name), gen.StructAST[v.Name])
+	}
+	return
+}
+
+// RustElement generates code for element XML schema in Rust language syntax.
+func (gen *CodeGenerator) RustElement(v *Element) {
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
+		fieldName := genRustFieldName(v.Name)
+		if v.Plural {
+			gen.StructAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, fieldName, fieldType)
+		} else {
+			gen.StructAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, fieldName, fieldType)
+		}
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", fieldName, gen.StructAST[v.Name])
+	}
+	return
+}
+
+// RustAttribute generates code for attribute XML schema in Rust language syntax.
+func (gen *CodeGenerator) RustAttribute(v *Attribute) {
+	if _, ok := gen.StructAST[v.Name]; !ok {
+		fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
+		fieldName := genRustFieldName(v.Name)
+		if v.Plural {
+			gen.StructAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: Vec<%s>,\n", v.Name, fieldName, fieldType)
+		} else {
+			gen.StructAST[v.Name] = fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", v.Name, fieldName, fieldType)
+		}
+		gen.Field += fmt.Sprintf("\n#[derive(Debug, Serialize, Deserialize)]\nstruct %s {\n%s}\n", fieldName, gen.StructAST[v.Name])
+	}
+	return
 }

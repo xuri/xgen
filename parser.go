@@ -125,6 +125,7 @@ func (opt *Options) Parse() (err error) {
 			Lang:      opt.Lang,
 			File:      filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)),
 			ProtoTree: opt.ProtoTree,
+			StructAST: map[string]string{},
 		}
 		funcName := fmt.Sprintf("Gen%s", MakeFirstUpperCase(opt.Lang))
 		if err = callFuncByName(generator, funcName, []reflect.Value{}); err != nil {

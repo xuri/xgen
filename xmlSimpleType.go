@@ -8,9 +8,7 @@
 
 package xgen
 
-import (
-	"encoding/xml"
-)
+import "encoding/xml"
 
 // OnSimpleType handles parsing event on the simpleType start elements. The
 // simpleType element defines a simple type and specifies the constraints and

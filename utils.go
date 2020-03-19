@@ -178,12 +178,15 @@ func MakeFirstUpperCase(s string) string {
 	return string(bytes.Join([][]byte{lc, rest}, nil))
 }
 
-// callFuncByName calls the only error return function with reflect by given
-// receiver, name and parameters.
+// callFuncByName calls the no error or only error return function with
+// reflect by given receiver, name and parameters.
 func callFuncByName(receiver interface{}, name string, params []reflect.Value) (err error) {
 	function := reflect.ValueOf(receiver).MethodByName(name)
 	if function.IsValid() {
 		rt := function.Call(params)
+		if len(rt) == 0 {
+			return
+		}
 		if !rt[0].IsNil() {
 			err = rt[0].Interface().(error)
 			return
