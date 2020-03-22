@@ -47,7 +47,9 @@ func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err 
 
 	}
 	if opt.ComplexType.Len() > 0 {
-		opt.ComplexType.Peek().(*ComplexType).Groups = append(opt.ComplexType.Peek().(*ComplexType).Groups, group)
+		if !inGroups(&group, opt.ComplexType.Peek().(*ComplexType).Groups) {
+			opt.ComplexType.Peek().(*ComplexType).Groups = append(opt.ComplexType.Peek().(*ComplexType).Groups, group)
+		}
 		return
 	}
 	return
@@ -64,4 +66,13 @@ func (opt *Options) EndGroup(ele xml.EndElement, protoTree []interface{}) (err e
 		opt.InGroup--
 	}
 	return
+}
+
+func inGroups(group *Group, groups []Group) bool {
+	for _, g := range groups {
+		if g.Name == group.Name {
+			return true
+		}
+	}
+	return false
 }

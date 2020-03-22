@@ -46,7 +46,9 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		opt.Element.Push(&e)
 	}
 	if opt.ComplexType.Len() > 0 {
-		opt.ComplexType.Peek().(*ComplexType).Elements = append(opt.ComplexType.Peek().(*ComplexType).Elements, e)
+		if !inElements(&e, opt.ComplexType.Peek().(*ComplexType).Elements) {
+			opt.ComplexType.Peek().(*ComplexType).Elements = append(opt.ComplexType.Peek().(*ComplexType).Elements, e)
+		}
 		return
 	}
 
@@ -67,4 +69,13 @@ func (opt *Options) EndElement(ele xml.EndElement, protoTree []interface{}) (err
 		opt.ProtoTree = append(opt.ProtoTree, opt.Element.Pop())
 	}
 	return
+}
+
+func inElements(element *Element, elements []Element) bool {
+	for _, ele := range elements {
+		if element.Name == ele.Name {
+			return true
+		}
+	}
+	return false
 }

@@ -19,28 +19,40 @@ import (
 // CodeGenerator holds code generator overrides and runtime data that are used
 // when generate code from proto tree.
 type CodeGenerator struct {
-	Lang       string
-	File       string
-	Field      string
-	ImportTime bool // For Go language
-	ProtoTree  []interface{}
-	StructAST  map[string]string
+	Lang              string
+	File              string
+	Field             string
+	ImportTime        bool // For Go language
+	ImportEncodingXML bool // For Go language
+	ProtoTree         []interface{}
+	StructAST         map[string]string
 }
 
 var goBuildinType = map[string]bool{
-	"string":    true,
-	"[]string":  true,
-	"xml.Name":  true,
-	"[]byte":    true,
-	"bool":      true,
-	"byte":      true,
-	"time.Time": true,
-	"float64":   true,
-	"float32":   true,
-	"int":       true,
-	"int64":     true,
-	"uint":      true,
-	"uint64":    true,
+	"xml.Name":      true,
+	"byte":          true,
+	"[]byte":        true,
+	"bool":          true,
+	"[]bool":        true,
+	"complex64":     true,
+	"complex128":    true,
+	"float32":       true,
+	"float64":       true,
+	"int":           true,
+	"int8":          true,
+	"int16":         true,
+	"int32":         true,
+	"int64":         true,
+	"interface":     true,
+	"[]interface{}": true,
+	"string":        true,
+	"[]string":      true,
+	"time.Time":     true,
+	"uint":          true,
+	"uint8":         true,
+	"uint16":        true,
+	"uint32":        true,
+	"uint64":        true,
 }
 
 // GenGo generate Go programming language source code for XML schema
@@ -58,9 +70,15 @@ func (gen *CodeGenerator) GenGo() error {
 		return err
 	}
 	defer f.Close()
-	var importPackage string
+	var importPackage, packages string
 	if gen.ImportTime {
-		importPackage = "import (\n\t\"time\"\n)"
+		packages += "\t\"time\"\n"
+	}
+	if gen.ImportEncodingXML {
+		packages += "\t\"encoding/xml\"\n"
+	}
+	if packages != "" {
+		importPackage = fmt.Sprintf("import (\n%s)", packages)
 	}
 	source, err := format.Source([]byte(fmt.Sprintf("%s\n\npackage schema\n%s%s", copyright, importPackage, gen.Field)))
 	if err != nil {
@@ -129,6 +147,11 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 	if v.Union && len(v.MemberTypes) > 0 {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			content := " struct {\n"
+			fieldName := genGoFieldName(v.Name)
+			if fieldName != v.Name {
+				gen.ImportEncodingXML = true
+				content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
+			}
 			for memberName, memberType := range v.MemberTypes {
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
@@ -137,7 +160,6 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 			}
 			content += "}\n"
 			gen.StructAST[v.Name] = content
-			fieldName := genGoFieldName(v.Name)
 			gen.Field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, gen.StructAST[v.Name])
 		}
 		return
@@ -156,6 +178,11 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
+		fieldName := genGoFieldName(v.Name)
+		if fieldName != v.Name {
+			gen.ImportEncodingXML = true
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
+		}
 		for _, attrGroup := range v.AttributeGroup {
 			fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
 			if fieldType == "time.Time" {
@@ -196,7 +223,6 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		fieldName := genGoFieldName(v.Name)
 		gen.Field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, gen.StructAST[v.Name])
 	}
 	return
@@ -206,6 +232,11 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 func (gen *CodeGenerator) GoGroup(v *Group) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
+		fieldName := genGoFieldName(v.Name)
+		if fieldName != v.Name {
+			gen.ImportEncodingXML = true
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
+		}
 		for _, element := range v.Elements {
 			var plural string
 			if element.Plural {
@@ -224,7 +255,6 @@ func (gen *CodeGenerator) GoGroup(v *Group) {
 
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		fieldName := genGoFieldName(v.Name)
 		gen.Field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, gen.StructAST[v.Name])
 	}
 	return
@@ -235,6 +265,11 @@ func (gen *CodeGenerator) GoGroup(v *Group) {
 func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
+		fieldName := genGoFieldName(v.Name)
+		if fieldName != v.Name {
+			gen.ImportEncodingXML = true
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
+		}
 		for _, attribute := range v.Attributes {
 			var optional string
 			if attribute.Optional {
@@ -244,7 +279,6 @@ func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		fieldName := genGoFieldName(v.Name)
 		gen.Field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, gen.StructAST[v.Name])
 	}
 	return
