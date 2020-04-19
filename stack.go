@@ -8,51 +8,49 @@
 
 package xgen
 
-type (
-	// Stack defined an abstract data type that serves as a collection of elements
-	Stack struct {
-		top    *node
-		length int
-	}
-	node struct {
-		value interface{}
-		prev  *node
-	}
-)
+import "container/list"
+
+// Stack defined an abstract data type that serves as a collection of elements
+type Stack struct {
+	list *list.List
+}
 
 // NewStack create a new stack
 func NewStack() *Stack {
-	return &Stack{nil, 0}
-}
-
-// Len return the number of items in the stack
-func (s *Stack) Len() int {
-	return s.length
-}
-
-// Peek view the top item on the stack
-func (s *Stack) Peek() interface{} {
-	if s.length == 0 {
-		return nil
-	}
-	return s.top.value
-}
-
-// Pop the top item of the stack and return it
-func (s *Stack) Pop() interface{} {
-	if s.length == 0 {
-		return nil
-	}
-
-	n := s.top
-	s.top = n.prev
-	s.length--
-	return n.value
+	list := list.New()
+	return &Stack{list}
 }
 
 // Push a value onto the top of the stack
-func (s *Stack) Push(value interface{}) {
-	n := &node{value, s.top}
-	s.top = n
-	s.length++
+func (stack *Stack) Push(value interface{}) {
+	stack.list.PushBack(value)
+}
+
+// Pop the top item of the stack and return it
+func (stack *Stack) Pop() interface{} {
+	e := stack.list.Back()
+	if e != nil {
+		stack.list.Remove(e)
+		return e.Value
+	}
+	return nil
+}
+
+// Peek view the top item on the stack
+func (stack *Stack) Peek() interface{} {
+	e := stack.list.Back()
+	if e != nil {
+		return e.Value
+	}
+	return nil
+}
+
+// Len return the number of items in the stack
+func (stack *Stack) Len() int {
+	return stack.list.Len()
+}
+
+// Empty the stack
+func (stack *Stack) Empty() bool {
+	return stack.list.Len() == 0
 }

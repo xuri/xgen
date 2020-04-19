@@ -25,7 +25,7 @@ Install the command line tool first.
 go get github.com/xuri/xgen
 ```
 
-The command below will walk on the `xsd` path and generate generate Go language struct code under the `output` directory.
+The command below will walk on the `xsd` path and generate Go language struct code under the `output` directory.
 
 ```text
 $ xgen -i /path/to/your/xsd -o /path/to/your/output -l Go
