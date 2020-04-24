@@ -44,6 +44,10 @@ func (gen *CodeGenerator) GenJava() error {
 		return err
 	}
 	defer f.Close()
+	packageName := gen.Package
+	if packageName == "" {
+		packageName = "schema"
+	}
 	var importPackage = `import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -53,7 +57,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;`
 
-	f.Write([]byte(fmt.Sprintf("%s\n\npackage schema;\n\n%s\n%s", copyright, importPackage, gen.Field)))
+	f.Write([]byte(fmt.Sprintf("%s\n\npackage %s;\n\n%s\n%s", copyright, packageName, importPackage, gen.Field)))
 	return err
 }
 

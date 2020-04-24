@@ -22,6 +22,7 @@ type CodeGenerator struct {
 	Lang              string
 	File              string
 	Field             string
+	Package           string
 	ImportTime        bool // For Go language
 	ImportEncodingXML bool // For Go language
 	ProtoTree         []interface{}
@@ -80,9 +81,13 @@ func (gen *CodeGenerator) GenGo() error {
 	if packages != "" {
 		importPackage = fmt.Sprintf("import (\n%s)", packages)
 	}
-	source, err := format.Source([]byte(fmt.Sprintf("%s\n\npackage schema\n%s%s", copyright, importPackage, gen.Field)))
+	packageName := gen.Package
+	if packageName == "" {
+		packageName = "schema"
+	}
+	source, err := format.Source([]byte(fmt.Sprintf("%s\n\npackage %s\n%s%s", copyright, packageName, importPackage, gen.Field)))
 	if err != nil {
-		f.WriteString(fmt.Sprintf("package schema\n%s%s", importPackage, gen.Field))
+		f.WriteString(fmt.Sprintf("package %s\n%s%s", packageName, importPackage, gen.Field))
 		return err
 	}
 	f.Write(source)

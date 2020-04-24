@@ -26,6 +26,7 @@ type Options struct {
 	OutputDir           string
 	Extract             bool
 	Lang                string
+	Package             string
 	LocalNameNSMap      map[string]string
 	NSSchemaLocationMap map[string]string
 	ParseFileList       map[string]bool
@@ -123,6 +124,7 @@ func (opt *Options) Parse() (err error) {
 		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
 		generator := &CodeGenerator{
 			Lang:      opt.Lang,
+			Package:   opt.Package,
 			File:      filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)),
 			ProtoTree: opt.ProtoTree,
 			StructAST: map[string]string{},
