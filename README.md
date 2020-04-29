@@ -21,8 +21,8 @@ xgen is a library written in pure Go providing a set of functions that allow you
 
 Install the command line tool first.
 
-```text
-go get github.com/xuri/xgen
+```sh
+go get -u -v github.com/xuri/xgen/cmd/...
 ```
 
 The command below will walk on the `xsd` path and generate Go language struct code under the `output` directory.
