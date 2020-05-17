@@ -36,6 +36,11 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 				e.Plural = true
 			}
 		}
+		if attr.Name.Local == "unbounded" {
+			if attr.Value != "0" {
+				e.Plural = true
+			}
+		}
 	}
 
 	if e.Type == "" {

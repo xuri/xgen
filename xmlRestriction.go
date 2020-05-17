@@ -26,6 +26,9 @@ func (opt *Options) OnRestriction(ele xml.StartElement, protoTree []interface{})
 				if err != nil {
 					return
 				}
+				if opt.SimpleType.Peek().(*SimpleType).Name == "" {
+					opt.SimpleType.Peek().(*SimpleType).Name = attr.Value
+				}
 			}
 		}
 	}
@@ -40,6 +43,11 @@ func (opt *Options) EndRestriction(ele xml.EndElement, protoTree []interface{}) 
 			return
 		}
 		opt.CurrentEle = ""
+	}
+	if !opt.Element.Empty() {
+		if !opt.ComplexType.Empty() && len(opt.ComplexType.Peek().(*ComplexType).Elements) > 0 {
+			opt.ComplexType.Peek().(*ComplexType).Elements[len(opt.ComplexType.Peek().(*ComplexType).Elements)-1] = *opt.Element.Peek().(*Element)
+		}
 	}
 	return
 }

@@ -42,6 +42,7 @@ func TestParseGo(t *testing.T) {
 			FilePath:            file,
 			OutputDir:           goCodeDir,
 			Lang:                "Go",
+			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
@@ -49,7 +50,7 @@ func TestParseGo(t *testing.T) {
 			ProtoTree:           make([]interface{}, 0),
 		})
 		err = parser.Parse()
-		assert.NoError(t, err)
+		assert.NoError(t, err, file)
 		if filepath.Ext(file) == ".xsd" {
 			srcCode := filepath.Join(goSrcDir, filepath.Base(file)+".go")
 			genCode := filepath.Join(goCodeDir, filepath.Base(file)+".go")
@@ -75,6 +76,7 @@ func TestParseTypeScript(t *testing.T) {
 			FilePath:            file,
 			OutputDir:           tsCodeDir,
 			Lang:                "TypeScript",
+			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
@@ -108,6 +110,7 @@ func TestParseC(t *testing.T) {
 			FilePath:            file,
 			OutputDir:           cCodeDir,
 			Lang:                "C",
+			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
@@ -141,6 +144,7 @@ func TestParseJava(t *testing.T) {
 			FilePath:            file,
 			OutputDir:           javaCodeDir,
 			Lang:                "Java",
+			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),
@@ -162,6 +166,7 @@ func TestParseRust(t *testing.T) {
 			FilePath:            file,
 			OutputDir:           rsCodeDir,
 			Lang:                "Rust",
+			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
 			ParseFileList:       make(map[string]bool),

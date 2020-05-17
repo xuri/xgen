@@ -27,6 +27,7 @@ type Options struct {
 	Extract             bool
 	Lang                string
 	Package             string
+	IncludeMap          map[string]bool
 	LocalNameNSMap      map[string]string
 	NSSchemaLocationMap map[string]string
 	ParseFileList       map[string]bool
@@ -162,6 +163,31 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		return
 	}
 	if fi.IsDir() {
+		// extract type of value from include schema.
+		valueType = ""
+		for include := range opt.IncludeMap {
+			parser := NewParser(&Options{
+				FilePath:            filepath.Join(opt.FileDir, include),
+				OutputDir:           opt.OutputDir,
+				Extract:             true,
+				Lang:                opt.Lang,
+				IncludeMap:          opt.IncludeMap,
+				LocalNameNSMap:      opt.LocalNameNSMap,
+				NSSchemaLocationMap: opt.NSSchemaLocationMap,
+				ParseFileList:       opt.ParseFileList,
+				ParseFileMap:        opt.ParseFileMap,
+				ProtoTree:           make([]interface{}, 0),
+			})
+			if parser.Parse() != nil {
+				return
+			}
+			if vt := getBasefromSimpleType(trimNSPrefix(value), parser.ProtoTree); vt != trimNSPrefix(value) {
+				valueType = vt
+			}
+		}
+		if valueType == "" {
+			valueType = trimNSPrefix(value)
+		}
 		return
 	}
 
@@ -172,6 +198,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			OutputDir:           opt.OutputDir,
 			Extract:             false,
 			Lang:                opt.Lang,
+			IncludeMap:          opt.IncludeMap,
 			LocalNameNSMap:      opt.LocalNameNSMap,
 			NSSchemaLocationMap: opt.NSSchemaLocationMap,
 			ParseFileList:       opt.ParseFileList,
@@ -192,6 +219,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		OutputDir:           opt.OutputDir,
 		Extract:             true,
 		Lang:                opt.Lang,
+		IncludeMap:          opt.IncludeMap,
 		LocalNameNSMap:      opt.LocalNameNSMap,
 		NSSchemaLocationMap: opt.NSSchemaLocationMap,
 		ParseFileList:       opt.ParseFileList,
