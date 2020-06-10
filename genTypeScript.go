@@ -62,11 +62,7 @@ func genTypeScriptFieldType(name string) string {
 	if _, ok := typeScriptBuildInType[name]; ok {
 		return name
 	}
-	var fieldType string
-	for _, str := range strings.Split(name, ".") {
-		fieldType += MakeFirstUpperCase(str)
-	}
-	fieldType = MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1))
+	var fieldType = strings.ReplaceAll(strings.ReplaceAll(name, ".", ""), "-", "")
 	if fieldType != "" {
 		return fieldType
 	}
