@@ -62,8 +62,12 @@ func genTypeScriptFieldType(name string) string {
 	if _, ok := typeScriptBuildInType[name]; ok {
 		return name
 	}
-	var fieldType = strings.ReplaceAll(strings.ReplaceAll(name, ".", ""), "-", "")
-	if fieldType != "" {
+	var fieldType string
+	for _, str := range strings.Split(name, ".") {
+		fieldType += MakeFirstUpperCase(str)
+	}
+	fieldType = MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1))
+	if fieldType != "" && fieldType != "Any" {
 		return fieldType
 	}
 	return "any"
@@ -94,6 +98,22 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 			gen.StructAST[v.Name] = content
 			gen.Field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
 		}
+		return
+	}
+	if len(v.Restriction.Enum) > 0 {
+		var content string
+		baseType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+		for _, enum := range v.Restriction.Enum {
+			switch baseType {
+			case "string":
+				content += fmt.Sprintf("\t%s = '%s',\n", enum, enum)
+			case "number":
+				content += fmt.Sprintf("\tEnum%s = %s,\n", enum, enum)
+			default:
+				content += fmt.Sprintf("\tEnum%s = '%s',\n", enum, enum)
+			}
+		}
+		gen.Field += fmt.Sprintf("\nexport enum %s {\n%s}\n", genTypeScriptFieldName(v.Name), content)
 		return
 	}
 	if _, ok := gen.StructAST[v.Name]; !ok {
