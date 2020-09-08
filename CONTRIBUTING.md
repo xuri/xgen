@@ -12,6 +12,8 @@ start participating.
 * [Reporting Issues](#reporting-other-issues)
 * [Quick Contribution Tips and Guidelines](#quick-contribution-tips-and-guidelines)
 * [Community Guidelines](#community-guidelines)
+* [Coding Style](#coding-style)
+* [Code Review Comments and Effective Go Guidelines](#code-review-comments-and-effective-go-guidelines)
 
 ## Reporting security issues
 
@@ -43,7 +45,7 @@ When reporting issues, always include the output of `go env`.
 
 Also include the steps required to reproduce the problem if possible and
 applicable. This information will help us review and fix your issue faster.
-When sending lengthy log-files, consider posting them as a gist [https://gist.github.com](https://gist.github.com).
+When sending lengthy log-files, consider posting them as a [gist](https://gist.github.com).
 Don't forget to remove sensitive data from your logfiles before posting (you can
 replace those parts with "REDACTED").
 
@@ -82,10 +84,6 @@ Fork the repository and make changes on your fork in a feature branch:
     your intentions, and name it XXXX-something where XXXX is the number of the
     issue.
 
-Submit unit tests for your changes. Go has a great test framework built in; use
-it! Take a look at existing tests for inspiration. Run the full test on your branch before
-submitting a pull request.
-
 Update the documentation when creating or modifying features. Test your
 documentation changes for clarity, concision, and correctness, as well as a
 clean documentation build.
@@ -96,6 +94,41 @@ committing your changes. Most editors have plug-ins that do this automatically.
 
 Pull request descriptions should be as clear as possible and include a reference
 to all the issues that they address.
+
+### Testing
+
+Submit tests for your changes. Go has a great test framework built in; use it!
+Take a look at existing tests for inspiration. Run the full test on your branch
+before submitting a pull request.
+
+The parser test suite, in `parser_test.go`, looks for a `data` directory in the
+root of the repository with the following structure:
+
+```
+data
+├── xsd
+├── c
+├── go
+├── java
+├── rs
+└── ts
+```
+
+Any `xsd` files in the `xsd` subdirectory are used as test inputs. For each
+language being tested, the generated code is placed in `<language>/output/`.
+Each `<language>` folder must contain the expected generated output from each
+input file.
+
+The `xgen` repository contains a small example parser test in the `test`
+directory; to run it, rename (or copy) the `test` directory to `data`, then
+simply use `go test .`. (Do not use `./...`, which will cause build failures
+due to redeclaration errors, since the generated code and the reference
+versions co-exist.)
+
+The full test suite is available as a [separate
+repository](https://github.com/xuri/xsd). To run it, copy the top-level
+contents of this repository into the `data` directory in the `xgen` working
+copy, then run `go test .`.
 
 ### Successful Changes
 
