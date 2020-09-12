@@ -8,11 +8,11 @@
   </simpleType>
 
   <complexType name="myType2">
-      <simpleContent>
+    <simpleContent>
       <extension base="base64Binary">
           <attribute name="length" type="int"/>
       </extension>
-      </simpleContent>
+    </simpleContent>
   </complexType>
 
   <complexType name="myType3">
@@ -35,14 +35,21 @@
     <restriction base="gDay"/>
   </simpleType>
 
+  <complexType name="myType6">
+    <simpleContent>
+      <extension base="string"/>
+    </simpleContent>
+  </complexType>
+
   <element name="topLevel">
     <complexType>
       <sequence>
-        <element name="instanceType1" type="here:myType1"/>
-        <element name="instanceType2" type="here:myType2"/>
-        <element name="instanceType3" type="here:myType3"/>
-        <element name="instanceType4" type="here:myType4"/>
-        <element name="instanceType5" type="here:myType5"/>
+        <element name="myType1" type="here:myType1"/>
+        <element name="myType2" type="here:myType2"/>
+        <element name="myType3" type="here:myType3"/>
+        <element name="myType4" type="here:myType4"/>
+        <element name="myType5" type="here:myType5"/>
+        <element name="myType6" type="here:myType6"/>
       </sequence>
     </complexType>
   </element>
