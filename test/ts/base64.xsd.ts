@@ -11,9 +11,9 @@ export class MyType3 {
 }
 
 export class MyType4 {
-	Title: Array<string>;
-	Blob: Array<Array<any>>;
-	Timestamp: Array<string>;
+	Title: string;
+	Blob: Array<any>;
+	Timestamp: string;
 }
 
 export type MyType5 = string;
