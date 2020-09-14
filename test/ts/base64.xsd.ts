@@ -4,7 +4,7 @@ export type MyType1 = Array<any>;
 
 export class MyType2 {
 	LengthAttr: number | null;
-	Value: Array<Array<any>>;
+	Value: Array<any>;
 }
 
 export class MyType3 {
