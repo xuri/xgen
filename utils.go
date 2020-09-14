@@ -17,8 +17,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 // GetFileList get a list of file by given path.
@@ -193,8 +191,6 @@ func callFuncByName(receiver interface{}, name string, params []reflect.Value) (
 			err = rt[0].Interface().(error)
 			return
 		}
-	} else if name == "OnExtension" { // XXX TEMP
-		spew.Dump(params)
 	}
 	return
 }
