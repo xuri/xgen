@@ -172,6 +172,15 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(element.Name), plural)
 		}
+
+		if len(v.Base) > 0 {
+			var plural, fieldType string
+			var ok bool
+			if fieldType, ok = innerArray(genCFieldType(v.Base)); ok {
+				plural = "[]"
+			}
+			content += fmt.Sprintf("\t%s Value%s;\n", fieldType, plural)
+		}
 		content += "}"
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("\ntypedef %s %s;\n", gen.StructAST[v.Name], genCFieldName(v.Name))
