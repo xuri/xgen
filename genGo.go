@@ -221,6 +221,13 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s\"`\n", genGoFieldName(element.Name), plural, fieldType, element.Name)
 		}
+
+		if len(v.Base) > 0 {
+			// XXX make sure 'Value' is not already present
+			// XXX what do the `genGoField*` functions do, and do we actually need them here?
+			content += fmt.Sprintf("\t%s\t%s\t`xml:\",chardata\"`\n", genGoFieldName("Value"), genGoFieldType(v.Base))
+		}
+
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("%stype %s%s", genGoFieldComment(fieldName), fieldName, gen.StructAST[v.Name])
