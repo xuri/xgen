@@ -4,10 +4,12 @@ export type MyType1 = Array<any>;
 
 export class MyType2 {
 	LengthAttr: number | null;
+	Value: Array<Array<any>>;
 }
 
 export class MyType3 {
 	LengthAttr: number | null;
+	Value: string;
 }
 
 export class MyType4 {
@@ -17,3 +19,16 @@ export class MyType4 {
 }
 
 export type MyType5 = string;
+
+export class MyType6 {
+	Value: string;
+}
+
+export class TopLevel {
+	MyType1: Array<Array<any>>;
+	MyType2: Array<MyType2>;
+	MyType3: Array<MyType3>;
+	MyType4: Array<MyType4>;
+	MyType5: Array<string>;
+	MyType6: Array<MyType6>;
+}
