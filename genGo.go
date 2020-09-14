@@ -223,9 +223,12 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 
 		if len(v.Base) > 0 {
-			// XXX make sure 'Value' is not already present
-			// XXX what do the `genGoField*` functions do, and do we actually need them here?
-			content += fmt.Sprintf("\t%s\t%s\t`xml:\",chardata\"`\n", genGoFieldName("Value"), genGoFieldType(v.Base))
+			// For valid XSD, `Value` cannot already be used as a separate field
+			// name. `v.Base` is invalid for sequences, and non-sequence types
+			// can't have `element`s in their definitions. Attributes have
+			// `Attr` appended to their names, so they will not collide with
+			// `Value`.
+			content += fmt.Sprintf("\tValue\t%s\t`xml:\",chardata\"`\n", genGoFieldType(v.Base))
 		}
 
 		content += "}\n"
