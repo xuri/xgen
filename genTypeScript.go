@@ -61,6 +61,7 @@ func genTypeScriptFieldName(name string) (fieldName string) {
 func genTypeScriptFieldType(name string, plural bool) (fieldType string) {
 	if _, ok := typeScriptBuildInType[name]; ok {
 		fieldType = name
+		return
 	}
 	for _, str := range strings.Split(name, ".") {
 		fieldType += MakeFirstUpperCase(str)
