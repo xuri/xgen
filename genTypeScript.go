@@ -158,6 +158,11 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
 		}
+
+		if len(v.Base) > 0 {
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+			content += fmt.Sprintf("\tValue: %s;\n", fieldType)
+		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("\nexport class %s%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
