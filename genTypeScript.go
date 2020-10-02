@@ -153,10 +153,9 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 		for _, element := range v.Elements {
 			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 			if element.Plural {
-				content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
-				continue
+				fieldType = fmt.Sprintf("Array<%s>", fieldType)
 			}
-			content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), fieldType)
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
