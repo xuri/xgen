@@ -40,6 +40,7 @@ func TestParseGo(t *testing.T) {
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
+			InputDir:            xsdSrcDir,
 			OutputDir:           goCodeDir,
 			Lang:                "Go",
 			IncludeMap:          make(map[string]bool),
@@ -74,6 +75,7 @@ func TestParseTypeScript(t *testing.T) {
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
+			InputDir:            xsdSrcDir,
 			OutputDir:           tsCodeDir,
 			Lang:                "TypeScript",
 			IncludeMap:          make(map[string]bool),
@@ -108,6 +110,7 @@ func TestParseC(t *testing.T) {
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
+			InputDir:            xsdSrcDir,
 			OutputDir:           cCodeDir,
 			Lang:                "C",
 			IncludeMap:          make(map[string]bool),
@@ -142,6 +145,7 @@ func TestParseJava(t *testing.T) {
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
+			InputDir:            xsdSrcDir,
 			OutputDir:           javaCodeDir,
 			Lang:                "Java",
 			IncludeMap:          make(map[string]bool),
@@ -164,6 +168,7 @@ func TestParseRust(t *testing.T) {
 	for _, file := range files {
 		parser := NewParser(&Options{
 			FilePath:            file,
+			InputDir:            xsdSrcDir,
 			OutputDir:           rsCodeDir,
 			Lang:                "Rust",
 			IncludeMap:          make(map[string]bool),

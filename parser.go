@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"golang.org/x/net/html/charset"
 )
@@ -23,6 +24,7 @@ import (
 type Options struct {
 	FilePath            string
 	FileDir             string
+	InputDir            string
 	OutputDir           string
 	Extract             bool
 	Lang                string
@@ -123,10 +125,15 @@ func (opt *Options) Parse() (err error) {
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
 		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
+		path := filepath.Join(opt.OutputDir, strings.TrimPrefix(opt.FilePath, opt.InputDir))
+		if err := PrepareOutputDir(filepath.Dir(path)); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		generator := &CodeGenerator{
 			Lang:      opt.Lang,
 			Package:   opt.Package,
-			File:      filepath.Join(opt.OutputDir, filepath.Base(opt.FilePath)),
+			File:      path,
 			ProtoTree: opt.ProtoTree,
 			StructAST: map[string]string{},
 		}
