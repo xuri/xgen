@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,8 +54,8 @@ func TestParseGo(t *testing.T) {
 		err = parser.Parse()
 		assert.NoError(t, err, file)
 		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(goSrcDir, filepath.Base(file)+".go")
-			genCode := filepath.Join(goCodeDir, filepath.Base(file)+".go")
+			srcCode := filepath.Join(goSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".go")
+			genCode := filepath.Join(goCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".go")
 
 			srcFile, err := os.Stat(srcCode)
 			assert.NoError(t, err)
@@ -88,8 +89,8 @@ func TestParseTypeScript(t *testing.T) {
 		err = parser.Parse()
 		assert.NoError(t, err)
 		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(tsSrcDir, filepath.Base(file)+".ts")
-			genCode := filepath.Join(tsCodeDir, filepath.Base(file)+".ts")
+			srcCode := filepath.Join(tsSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".ts")
+			genCode := filepath.Join(tsCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".ts")
 
 			srcFile, err := os.Stat(srcCode)
 			assert.NoError(t, err)
@@ -123,8 +124,8 @@ func TestParseC(t *testing.T) {
 		err = parser.Parse()
 		assert.NoError(t, err)
 		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(cSrcDir, filepath.Base(file)+".h")
-			genCode := filepath.Join(cCodeDir, filepath.Base(file)+".h")
+			srcCode := filepath.Join(cSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".h")
+			genCode := filepath.Join(cCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".h")
 
 			srcFile, err := os.Stat(srcCode)
 			assert.NoError(t, err)
