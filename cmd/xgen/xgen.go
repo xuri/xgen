@@ -112,6 +112,7 @@ func main() {
 	for _, file := range files {
 		if err = xgen.NewParser(&xgen.Options{
 			FilePath:            file,
+			InputDir:            cfg.I,
 			OutputDir:           cfg.O,
 			Lang:                cfg.Lang,
 			Package:             cfg.Pkg,

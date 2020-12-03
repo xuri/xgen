@@ -58,19 +58,22 @@ func genTypeScriptFieldName(name string) (fieldName string) {
 	return
 }
 
-func genTypeScriptFieldType(name string) string {
+func genTypeScriptFieldType(name string, plural bool) (fieldType string) {
 	if _, ok := typeScriptBuildInType[name]; ok {
-		return name
+		fieldType = name
+		return
 	}
-	var fieldType string
 	for _, str := range strings.Split(name, ".") {
 		fieldType += MakeFirstUpperCase(str)
 	}
 	fieldType = MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1))
-	if fieldType != "" && fieldType != "Any" {
-		return fieldType
+	if fieldType == "" || fieldType == "Any" {
+		fieldType = "any"
 	}
-	return "any"
+	if plural {
+		fieldType = fmt.Sprintf("Array<%s>", fieldType)
+	}
+	return
 }
 
 // TypeScriptSimpleType generates code for simple type XML schema in TypeScript language
@@ -78,8 +81,8 @@ func genTypeScriptFieldType(name string) string {
 func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 	if v.List {
 		if _, ok := gen.StructAST[v.Name]; !ok {
-			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-			content := fmt.Sprintf(" = Array<%s>;\n", genTypeScriptFieldType(fieldType))
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree), true)
+			content := fmt.Sprintf(" = %s;\n", fieldType)
 			gen.StructAST[v.Name] = content
 			gen.Field += fmt.Sprintf("\nexport type %s%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
 			return
@@ -92,7 +95,7 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
-				content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(memberName), genTypeScriptFieldType(memberType))
+				content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(memberName), genTypeScriptFieldType(memberType, false))
 			}
 			content += "}\n"
 			gen.StructAST[v.Name] = content
@@ -102,7 +105,7 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 	}
 	if len(v.Restriction.Enum) > 0 {
 		var content string
-		baseType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+		baseType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree), false)
 		for _, enum := range v.Restriction.Enum {
 			switch baseType {
 			case "string":
@@ -117,7 +120,7 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 		return
 	}
 	if _, ok := gen.StructAST[v.Name]; !ok {
-		content := fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
+		content := fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree), false))
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
 	}
@@ -131,7 +134,7 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 		content := " {\n"
 		for _, attrGroup := range v.AttributeGroup {
 			fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
-			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(attrGroup.Name), genTypeScriptFieldType(fieldType))
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(attrGroup.Name), genTypeScriptFieldType(fieldType, false))
 		}
 
 		for _, attribute := range v.Attributes {
@@ -139,24 +142,16 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 			if attribute.Optional {
 				optional = ` | null`
 			}
-			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree), attribute.Plural)
 			content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name), fieldType, optional)
 		}
 		for _, group := range v.Groups {
-			if group.Plural {
-				content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
-				continue
-			}
-			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree), group.Plural))
 		}
 
 		for _, element := range v.Elements {
-			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
-			if element.Plural {
-				content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
-				continue
-			}
-			content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), fieldType)
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree), element.Plural)
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), fieldType)
 		}
 
 		if len(v.Base) > 0 {
@@ -175,19 +170,11 @@ func (gen *CodeGenerator) TypeScriptGroup(v *Group) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " {\n"
 		for _, element := range v.Elements {
-			if element.Plural {
-				content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(element.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
-				continue
-			}
-			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)))
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree), element.Plural))
 		}
 
 		for _, group := range v.Groups {
-			if group.Plural {
-				content += fmt.Sprintf("\t%s: Array<%s>;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
-				continue
-			}
-			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree), group.Plural))
 		}
 
 		content += "}\n"
@@ -207,7 +194,7 @@ func (gen *CodeGenerator) TypeScriptAttributeGroup(v *AttributeGroup) {
 			if attribute.Optional {
 				optional = ` | null`
 			}
-			content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), optional)
+			content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree), attribute.Plural), optional)
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
@@ -219,12 +206,7 @@ func (gen *CodeGenerator) TypeScriptAttributeGroup(v *AttributeGroup) {
 // TypeScriptElement generates code for element XML schema in TypeScript language syntax.
 func (gen *CodeGenerator) TypeScriptElement(v *Element) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
-		if v.Plural {
-			gen.StructAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
-		} else {
-			gen.StructAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
-		}
-
+		gen.StructAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree), v.Plural))
 		gen.Field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
 	}
 	return
@@ -233,11 +215,7 @@ func (gen *CodeGenerator) TypeScriptElement(v *Element) {
 // TypeScriptAttribute generates code for attribute XML schema in TypeScript language syntax.
 func (gen *CodeGenerator) TypeScriptAttribute(v *Attribute) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
-		if v.Plural {
-			gen.StructAST[v.Name] = fmt.Sprintf(" Array<%s>;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
-		} else {
-			gen.StructAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
-		}
+		gen.StructAST[v.Name] = fmt.Sprintf(" %s;\n", genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree), v.Plural))
 		gen.Field += fmt.Sprintf("\nexport type %s =%s", genTypeScriptFieldName(v.Name), gen.StructAST[v.Name])
 	}
 	return
