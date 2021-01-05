@@ -1,6 +1,6 @@
-// Copyright 2020 The xgen Authors. All rights reserved. Use of this source
-// code is governed by a BSD-style license that can be found in the LICENSE
-// file.
+// Copyright 2020 - 2021 The xgen Authors. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 //
 // xgen is a tool to automatically compiles XML schema files into the
 // multi-language type or class declarations code.
@@ -68,7 +68,7 @@ func parseFlags() *Config {
 	helpPtr := flag.Bool("h", false, "Show this help and exit")
 	flag.Parse()
 	if *helpPtr {
-		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
+		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2021 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
 		os.Exit(0)
 	}
 	if *verPtr {

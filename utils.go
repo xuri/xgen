@@ -1,6 +1,6 @@
-// Copyright 2020 The xgen Authors. All rights reserved. Use of this source
-// code is governed by a BSD-style license that can be found in the LICENSE
-// file.
+// Copyright 2020 - 2021 The xgen Authors. All rights reserved. Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 //
 // Package xgen written in pure Go providing a set of functions that allow you
 // to parse XSD (XML schema files). This library needs Go version 1.10 or
@@ -16,8 +16,22 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 )
+
+var (
+	matchFirstCap = regexp.MustCompile("([A-Z])([A-Z][a-z])")
+	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
+)
+
+// ToSnakeCase converts the provided string to snake_case.
+func ToSnakeCase(input string) string {
+	output := matchFirstCap.ReplaceAllString(input, "${1}_${2}")
+	output = matchAllCap.ReplaceAllString(output, "${1}_${2}")
+	output = strings.ReplaceAll(output, "-", "_")
+	return strings.ToLower(output)
+}
 
 // GetFileList get a list of file by given path.
 func GetFileList(path string) (files []string, err error) {
@@ -73,9 +87,9 @@ var BuildInTypes = map[string][]string{
 	"anyURI":             {"string", "string", "char", "QName", "char"},
 	"base64Binary":       {"[]byte", "Array<any>", "char[]", "List<Byte>", "Vec<u8>"},
 	"boolean":            {"bool", "boolean", "bool", "Boolean", "bool"},
-	"byte":               {"byte", "any", "char[]", "Byte", "&[u8]"},
-	"date":               {"time.Time", "string", "char", "Byte", "&[u8]"},
-	"dateTime":           {"time.Time", "string", "char", "Byte", "&[u8]"},
+	"byte":               {"byte", "any", "char[]", "Byte", "u8"},
+	"date":               {"time.Time", "string", "char", "Byte", "u8"},
+	"dateTime":           {"time.Time", "string", "char", "Byte", "u8"},
 	"decimal":            {"float64", "number", "float", "Float", "f64"},
 	"double":             {"float64", "number", "float", "Float", "f64"},
 	"duration":           {"string", "string", "char", "String", "char"},
@@ -99,7 +113,7 @@ var BuildInTypes = map[string][]string{
 	"string":             {"string", "string", "char", "String", "char"},
 	"time":               {"time.Time", "string", "char", "String", "char"},
 	"token":              {"string", "string", "char", "String", "char"},
-	"unsignedByte":       {"byte", "any", "char", "Byte", "&[u8]"},
+	"unsignedByte":       {"byte", "any", "char", "Byte", "u8"},
 	"unsignedInt":        {"uint32", "number", "unsigned int", "Integer", "u32"},
 	"unsignedLong":       {"uint64", "number", "unsigned int", "Long", "u64"},
 	"unsignedShort":      {"uint16", "number", "unsigned int", "Short", "u16"},
@@ -124,6 +138,7 @@ func getBuildInTypeByLang(value, lang string) (buildType string, ok bool) {
 	buildType = buildInTypes[supportLang[lang]]
 	return
 }
+
 func getBasefromSimpleType(name string, XSDSchema []interface{}) string {
 	for _, ele := range XSDSchema {
 		switch v := ele.(type) {
