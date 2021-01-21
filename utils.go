@@ -10,6 +10,7 @@ package xgen
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -85,7 +86,7 @@ var BuildInTypes = map[string][]string{
 	"Name":               {"string", "string", "char", "String", "String"},
 	"QName":              {"xml.Name", "any", "char", "String", "String"},
 	"anyURI":             {"string", "string", "char", "QName", "String"},
-	"base64Binary":       {"[]byte", "Array<any>", "char[]", "List<Byte>", "String"},
+	"base64Binary":       {"[]byte", "Uint8Array", "char[]", "List<Byte>", "String"},
 	"boolean":            {"bool", "boolean", "bool", "Boolean", "bool"},
 	"byte":               {"byte", "any", "char[]", "Byte", "u8"},
 	"date":               {"time.Time", "string", "char", "Byte", "u8"},
@@ -99,7 +100,7 @@ var BuildInTypes = map[string][]string{
 	"gMonthDay":          {"time.Time", "string", "char", "String", "String"},
 	"gYear":              {"time.Time", "string", "char", "String", "String"},
 	"gYearMonth":         {"time.Time", "string", "char", "String", "String"},
-	"hexBinary":          {"[]byte", "Array<any>", "char[]", "List<Byte>", "String"},
+	"hexBinary":          {"[]byte", "Uint8Array", "char[]", "List<Byte>", "String"},
 	"int":                {"int", "number", "int", "Integer", "i32"},
 	"integer":            {"int", "number", "int", "Integer", "i32"},
 	"language":           {"string", "string", "char", "String", "String"},
@@ -243,4 +244,12 @@ func fetchSchema(URL string) ([]byte, error) {
 		}
 	}
 	return body, err
+}
+
+func genFieldComment(name, doc, prefix string) string {
+	docReplacer := strings.NewReplacer("\n", fmt.Sprintf("\r\n%s ", prefix), "\t", "")
+	if doc == "" {
+		return fmt.Sprintf("\r\n%s %s ...\r\n", prefix, name)
+	}
+	return fmt.Sprintf("\r\n%s %s is %s\r\n", prefix, name, docReplacer.Replace(doc))
 }

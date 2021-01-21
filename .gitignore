@@ -1,2 +1,3 @@
 test/**/output
 data/
+**/.DS_Store*

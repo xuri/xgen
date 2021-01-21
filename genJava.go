@@ -113,7 +113,8 @@ func (gen *CodeGenerator) JavaSimpleType(v *SimpleType) {
 			}
 			content += "}\n"
 			gen.StructAST[v.Name] = content
-			gen.Field += fmt.Sprintf("\npublic class %s%s", genJavaFieldName(v.Name), gen.StructAST[v.Name])
+			fieldName := genJavaFieldName(v.Name)
+			gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 		}
 		return
 	}
@@ -121,7 +122,8 @@ func (gen *CodeGenerator) JavaSimpleType(v *SimpleType) {
 		fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
 		content := fmt.Sprintf("\tprotected %s %s;\n", fieldType, genJavaFieldName(v.Name))
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\n@XmlAccessorType(XmlAccessType.FIELD)\n@XmlAttribute(required = true, name = \"%s\")\npublic class %s {\n%s}\n", v.Name, genJavaFieldName(v.Name), gen.StructAST[v.Name])
+		fieldName := genJavaFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%s@XmlAccessorType(XmlAccessType.FIELD)\n@XmlAttribute(required = true, name = \"%s\")\npublic class %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), v.Name, fieldName, gen.StructAST[v.Name])
 	}
 	return
 }
@@ -161,7 +163,8 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\npublic class %s%s", genJavaFieldName(v.Name), gen.StructAST[v.Name])
+		fieldName := genJavaFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
 	return
 }
@@ -188,7 +191,8 @@ func (gen *CodeGenerator) JavaGroup(v *Group) {
 
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\npublic class %s%s", genJavaFieldName(v.Name), gen.StructAST[v.Name])
+		fieldName := genJavaFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
 	return
 }
@@ -208,7 +212,8 @@ func (gen *CodeGenerator) JavaAttributeGroup(v *AttributeGroup) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\npublic class %s%s", genJavaFieldName(v.Name), gen.StructAST[v.Name])
+		fieldName := genJavaFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
 	return
 }

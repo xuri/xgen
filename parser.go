@@ -116,6 +116,10 @@ func (opt *Options) Parse() (err error) {
 			if err = callFuncByName(opt, funcName, []reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)}); err != nil {
 				return
 			}
+		case xml.CharData:
+			if err = opt.OnCharData(string(element), opt.ProtoTree); err != nil {
+				return
+			}
 		default:
 		}
 

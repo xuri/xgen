@@ -97,7 +97,8 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 			fieldType := genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
 			content := fmt.Sprintf("%s %s[];\n", genCFieldType(fieldType), genCFieldName(v.Name))
 			gen.StructAST[v.Name] = content
-			gen.Field += fmt.Sprintf("\ntypedef %s", gen.StructAST[v.Name])
+			fieldName := genCFieldName(v.Name)
+			gen.Field += fmt.Sprintf("%stypedef %s", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 			return
 		}
 	}
@@ -117,7 +118,8 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 			}
 			content += "}"
 			gen.StructAST[v.Name] = content
-			gen.Field += fmt.Sprintf("\ntypedef %s %s;\n", gen.StructAST[v.Name], genCFieldName(v.Name))
+			fieldName := genCFieldName(v.Name)
+			gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 		}
 		return
 	}
@@ -128,7 +130,8 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 			plural = "[]"
 		}
 		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
-		gen.Field += fmt.Sprintf("\ntypedef %s;\n", gen.StructAST[v.Name])
+		fieldName := genCFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%stypedef %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 	}
 	return
 }
@@ -174,7 +177,8 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 		}
 		content += "}"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\ntypedef %s %s;\n", gen.StructAST[v.Name], genCFieldName(v.Name))
+		fieldName := genCFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 	return
 }
@@ -201,7 +205,8 @@ func (gen *CodeGenerator) CGroup(v *Group) {
 
 		content += "}"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\ntypedef %s %s;\n", gen.StructAST[v.Name], genCFieldName(v.Name))
+		fieldName := genCFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 	return
 }
@@ -224,7 +229,8 @@ func (gen *CodeGenerator) CAttributeGroup(v *AttributeGroup) {
 		}
 		content += "}"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("\ntypedef %s %s;\n", gen.StructAST[v.Name], genCFieldName(v.Name))
+		fieldName := genCFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 }
 
@@ -250,6 +256,7 @@ func (gen *CodeGenerator) CAttribute(v *Attribute) {
 			plural = "[]"
 		}
 		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
-		gen.Field += fmt.Sprintf("\ntypedef %s;\n", gen.StructAST[v.Name])
+		fieldName := genCFieldName(v.Name)
+		gen.Field += fmt.Sprintf("%stypedef %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 	}
 }
