@@ -27,19 +27,17 @@ Briefly describe the problem you are having in a few paragraphs.
 
 **Describe the results you received:**
 
-
 **Describe the results you expected:**
-
 
 **Output of `go version`:**
 
-```
+```text
 (paste your output here)
 ```
 
-**Aurora version or commit ID:**
+**xgen version or commit ID:**
 
-```
+```text
 (paste here)
 ```
 
