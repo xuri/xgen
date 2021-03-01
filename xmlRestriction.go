@@ -21,6 +21,7 @@ func (opt *Options) OnRestriction(ele xml.StartElement, protoTree []interface{})
 			if err != nil {
 				return
 			}
+			// If inside a simple type definition, we cannot also be inside a simpleContent or complexContent
 			if opt.SimpleType.Peek() != nil {
 				opt.SimpleType.Peek().(*SimpleType).Base, err = opt.GetValueType(valueType, protoTree)
 				if err != nil {
@@ -45,8 +46,12 @@ func (opt *Options) EndRestriction(ele xml.EndElement, protoTree []interface{}) 
 		opt.CurrentEle = ""
 	}
 	if !opt.Element.Empty() {
-		if !opt.ComplexType.Empty() && len(opt.ComplexType.Peek().(*ComplexType).Elements) > 0 {
-			opt.ComplexType.Peek().(*ComplexType).Elements[len(opt.ComplexType.Peek().(*ComplexType).Elements)-1] = *opt.Element.Peek().(*Element)
+		// This handles the case of a simpleContent or complexContent (XXX - is this correct?)
+		if !opt.ComplexType.Empty() {
+			var complexType = opt.ComplexType.Peek().(*ComplexType)
+			if len(complexType.Elements) > 0 {
+				complexType.Elements = append(complexType.Elements, *opt.Element.Peek().(*Element))
+			}
 		}
 	}
 	return

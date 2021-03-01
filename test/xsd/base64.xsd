@@ -1,4 +1,6 @@
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://example.org/">
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:here="http://example.org/"
+        targetNamespace="http://example.org/">
   <simpleType name="myType1">
     <restriction base="base64Binary">
       <length value="10" />
@@ -8,7 +10,7 @@
   <complexType name="myType2">
     <simpleContent>
       <extension base="base64Binary">
-        <attribute name="length" type="int"/>
+          <attribute name="length" type="int"/>
       </extension>
     </simpleContent>
   </complexType>
@@ -32,5 +34,24 @@
   <simpleType name="myType5">
     <restriction base="gDay"/>
   </simpleType>
+
+  <complexType name="myType6">
+    <simpleContent>
+      <extension base="string"/>
+    </simpleContent>
+  </complexType>
+
+  <element name="topLevel">
+    <complexType>
+      <sequence>
+        <element name="myType1" type="here:myType1"/>
+        <element name="myType2" type="here:myType2"/>
+        <element name="myType3" type="here:myType3"/>
+        <element name="myType4" type="here:myType4"/>
+        <element name="myType5" type="here:myType5"/>
+        <element name="myType6" type="here:myType6"/>
+      </sequence>
+    </complexType>
+  </element>
 </schema>
 

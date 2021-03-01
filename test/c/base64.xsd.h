@@ -6,11 +6,13 @@ typedef char MyType1[];
 // MyType2 ...
 typedef struct {
 	int LengthAttr; // attr, optional
+	char Value[];
 } MyType2;
 
 // MyType3 ...
 typedef struct {
 	int LengthAttr; // attr, optional
+	char Value;
 } MyType3;
 
 // MyType4 ...
@@ -22,3 +24,16 @@ typedef struct {
 
 // MyType5 ...
 typedef char MyType5;
+
+typedef struct {
+	char Value;
+} MyType6;
+
+typedef struct {
+	char MyType1[];
+	MyType2 MyType2;
+	MyType3 MyType3;
+	MyType4 MyType4;
+	char MyType5;
+	MyType6 MyType6;
+} TopLevel;

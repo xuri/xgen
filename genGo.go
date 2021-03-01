@@ -217,6 +217,16 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s\"`\n", genGoFieldName(element.Name), plural, fieldType, element.Name)
 		}
+
+		if len(v.Base) > 0 {
+			// For valid XSD, `Value` cannot already be used as a separate field
+			// name. `v.Base` is invalid for sequences, and non-sequence types
+			// can't have `element`s in their definitions. Attributes have
+			// `Attr` appended to their names, so they will not collide with
+			// `Value`.
+			content += fmt.Sprintf("\tValue\t%s\t`xml:\",chardata\"`\n", genGoFieldType(v.Base))
+		}
+
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])

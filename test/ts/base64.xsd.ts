@@ -6,11 +6,13 @@ export type MyType1 = Uint8Array;
 // MyType2 ...
 export class MyType2 {
 	LengthAttr: number | null;
+	Value: Array<any>;
 }
 
 // MyType3 ...
 export class MyType3 {
 	LengthAttr: number | null;
+	Value: string;
 }
 
 // MyType4 ...
@@ -22,3 +24,16 @@ export class MyType4 {
 
 // MyType5 ...
 export type MyType5 = string;
+
+export class MyType6 {
+	Value: string;
+}
+
+export class TopLevel {
+	MyType1: Array<Array<any>>;
+	MyType2: Array<MyType2>;
+	MyType3: Array<MyType3>;
+	MyType4: Array<MyType4>;
+	MyType5: Array<string>;
+	MyType6: Array<MyType6>;
+}
