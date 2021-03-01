@@ -8,7 +8,10 @@
 
 package xgen
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"strconv"
+)
 
 // OnElement handles parsing event on the element start elements.
 func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (err error) {
@@ -32,8 +35,12 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 			}
 		}
 		if attr.Name.Local == "maxOccurs" {
-			if attr.Value != "0" {
-				e.Plural = true
+			var maxOccurs int
+			if maxOccurs, err = strconv.Atoi(attr.Value); attr.Value != "unbounded" && err != nil {
+				return
+			}
+			if attr.Value == "unbounded" || maxOccurs > 1 {
+				e.Plural, err = true, nil
 			}
 		}
 		if attr.Name.Local == "unbounded" {
