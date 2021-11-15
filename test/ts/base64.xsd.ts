@@ -22,3 +22,9 @@ export class MyType4 {
 
 // MyType5 ...
 export type MyType5 = string;
+
+// MyType6 ...
+export class MyType6 {
+	CodeAttr: string | null;
+	IdentifierAttr: number | null;
+}
