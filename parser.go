@@ -58,7 +58,7 @@ func NewParser(options *Options) *Options {
 }
 
 // Parse reads XML documents and return proto tree for every element in the
-// documents by given options. If value of the properity extract is false,
+// documents by given options. If value of the property extract is false,
 // parse will fetch schema used in <import> or <include> statements.
 func (opt *Options) Parse() (err error) {
 	opt.FileDir = filepath.Dir(opt.FilePath)

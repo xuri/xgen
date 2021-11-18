@@ -32,5 +32,17 @@
   <simpleType name="myType5">
     <restriction base="gDay"/>
   </simpleType>
+
+  <complexType name="myType6">
+    <attribute name="code">
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="value1"/>
+          <enumeration value="value2"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="identifier" type="int"/>
+  </complexType>
 </schema>
 

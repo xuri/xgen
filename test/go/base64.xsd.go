@@ -32,3 +32,10 @@ type MyType4 struct {
 
 // MyType5 ...
 type MyType5 time.Time
+
+// MyType6 ...
+type MyType6 struct {
+	XMLName        xml.Name `xml:"myType6"`
+	CodeAttr       string   `xml:"code,attr,omitempty"`
+	IdentifierAttr int      `xml:"identifier,attr,omitempty"`
+}

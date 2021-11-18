@@ -39,11 +39,6 @@ func (opt *Options) OnAttribute(ele xml.StartElement, protoTree []interface{}) (
 			}
 		}
 	}
-	if opt.ComplexType.Len() > 0 {
-		opt.ComplexType.Peek().(*ComplexType).Attributes = append(opt.ComplexType.Peek().(*ComplexType).Attributes, attribute)
-		return
-	}
-
 	opt.Attribute.Push(&attribute)
 	return
 }
@@ -55,6 +50,10 @@ func (opt *Options) EndAttribute(ele xml.EndElement, protoTree []interface{}) (e
 	}
 	if opt.AttributeGroup.Len() > 0 {
 		opt.AttributeGroup.Peek().(*AttributeGroup).Attributes = append(opt.AttributeGroup.Peek().(*AttributeGroup).Attributes, *opt.Attribute.Pop().(*Attribute))
+		return
+	}
+	if opt.ComplexType.Len() > 0 {
+		opt.ComplexType.Peek().(*ComplexType).Attributes = append(opt.ComplexType.Peek().(*ComplexType).Attributes, *opt.Attribute.Pop().(*Attribute))
 		return
 	}
 	if opt.ComplexType.Len() == 0 {
