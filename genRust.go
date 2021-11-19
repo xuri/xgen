@@ -178,7 +178,10 @@ func (gen *CodeGenerator) RustSimpleType(v *SimpleType) {
 	if v.Union && len(v.MemberTypes) > 0 {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			var content string
-			for memberName, memberType := range v.MemberTypes {
+			for _, member := range toSortedPairs(v.MemberTypes) {
+				memberName := member.key
+				memberType := member.value
+
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
@@ -237,13 +240,27 @@ func (gen *CodeGenerator) RustComplexType(v *ComplexType) {
 					content += fmt.Sprintf("\t#[serde(rename = \"%s\")]\n\tpub %s: %s,\n", element.Name, fieldName, fieldType)
 				}
 			}
-
+		}
+		if len(v.Base) > 0 {
+			fieldType := genRustFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+			if isRustBuiltInType(v.Base) {
+				content += fmt.Sprintf("\t#[serde(rename = \"$value\")]\n\tpub value: %s,\n", fieldType)
+			} else {
+				fieldName := genRustFieldName(fieldType)
+				// If the type is not a built-in one, add the base type as a nested field tagged with flatten
+				content += fmt.Sprintf("\t#[serde(flatten)]\n\tpub %s: %s,\n", fieldName, fieldType)
+			}
 		}
 		gen.StructAST[v.Name] = content
 		fieldName := genRustStructName(v.Name)
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
 	return
+}
+
+func isRustBuiltInType(typeName string) bool {
+	_, builtIn := rustBuildinType[typeName]
+	return builtIn
 }
 
 // RustGroup generates code for group XML schema in Rust language syntax.

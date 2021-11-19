@@ -93,7 +93,10 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 	if v.Union && len(v.MemberTypes) > 0 {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			content := " {\n"
-			for memberName, memberType := range v.MemberTypes {
+			for _, member := range toSortedPairs(v.MemberTypes) {
+				memberName := member.key
+				memberType := member.value
+
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
@@ -158,12 +161,29 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree), element.Plural)
 			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name), fieldType)
 		}
+
+		if len(v.Base) > 0 && isBuiltInTypeScriptType(v.Base) {
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree), false)
+			content += fmt.Sprintf("\tValue: %s;\n", fieldType)
+		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		fieldName := genTypeScriptFieldName(v.Name)
-		gen.Field += fmt.Sprintf("%sexport class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		typeExtension := ""
+		if len(v.Base) > 0 && !isBuiltInTypeScriptType(v.Base) {
+			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree), false)
+			content += fmt.Sprintf("\tValue: %s;\n", fieldType)
+			typeExtension = fmt.Sprintf(" extends %s ", fieldType)
+		}
+
+		gen.Field += fmt.Sprintf("%sexport class %s%s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, typeExtension, gen.StructAST[v.Name])
 	}
 	return
+}
+
+func isBuiltInTypeScriptType(typeName string) bool {
+	_, builtIn := typeScriptBuildInType[typeName]
+	return builtIn
 }
 
 // TypeScriptGroup generates code for group XML schema in TypeScript language syntax.
