@@ -55,7 +55,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;`
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlValue;`
 
 	f.Write([]byte(fmt.Sprintf("%s\n\npackage %s;\n\n%s\n%s", copyright, packageName, importPackage, gen.Field)))
 	return err
@@ -104,7 +105,10 @@ func (gen *CodeGenerator) JavaSimpleType(v *SimpleType) {
 	if v.Union && len(v.MemberTypes) > 0 {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			content := " {\n"
-			for memberName, memberType := range v.MemberTypes {
+			for _, member := range toSortedPairs(v.MemberTypes) {
+				memberName := member.key
+				memberType := member.value
+
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
@@ -161,12 +165,30 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t@XmlElement(required = true, name = \"%s\")\n\tprotected %s %s;\n", element.Name, fieldType, genJavaFieldName(element.Name))
 		}
+
+		if len(v.Base) > 0 && isBuiltInJavaType(v.Base) {
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+			content += fmt.Sprintf("\t@XmlValue\n\tprotected %s value;\n", fieldType)
+		}
+
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		fieldName := genJavaFieldName(v.Name)
-		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		typeExtension := ""
+		if len(v.Base) > 0 && !isBuiltInJavaType(v.Base) {
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
+			typeExtension = fmt.Sprintf(" extends %s ", fieldType)
+		}
+
+		gen.Field += fmt.Sprintf("%spublic class %s%s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, typeExtension, gen.StructAST[v.Name])
 	}
 	return
+}
+
+func isBuiltInJavaType(typeName string) bool {
+	_, builtIn := javaBuildInType[typeName]
+	return builtIn
 }
 
 // JavaGroup generates code for group XML schema in Java language syntax.

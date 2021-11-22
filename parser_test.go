@@ -10,176 +10,126 @@ package xgen
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
-	testDir     = "data"
-	cSrcDir     = filepath.Join(testDir, "c")
-	cCodeDir    = filepath.Join(cSrcDir, "output")
-	goSrcDir    = filepath.Join(testDir, "go")
-	goCodeDir   = filepath.Join(goSrcDir, "output")
-	tsSrcDir    = filepath.Join(testDir, "ts")
-	tsCodeDir   = filepath.Join(tsSrcDir, "output")
-	javaSrcDir  = filepath.Join(testDir, "java")
-	javaCodeDir = filepath.Join(javaSrcDir, "output")
-	rsSrcDir    = filepath.Join(testDir, "rs")
-	rsCodeDir   = filepath.Join(rsSrcDir, "output")
-	xsdSrcDir   = filepath.Join(testDir, "xsd")
+	testFixtureDir = "test"
+	// externalFixtureDir is where one copy their own XSDs to run validation on them. For a set
+	// of XSDs to run tests on, see https://github.com/xuri/xsd. Note that external tests leave the
+	// generated output for inspection to support use-cases of manual review of generated code
+	externalFixtureDir = "data"
 )
 
 func TestParseGo(t *testing.T) {
-	err := PrepareOutputDir(goCodeDir)
-	assert.NoError(t, err)
-	files, err := GetFileList(xsdSrcDir)
-	assert.NoError(t, err)
+	testParseForSource(t, "Go", "go", "go", testFixtureDir, false)
+}
+
+// TestParseGoExternal runs tests on any external XSDs within the externalFixtureDir
+func TestParseGoExternal(t *testing.T) {
+	testParseForSource(t, "Go", "go", "go", externalFixtureDir, true)
+}
+
+// testParseForSource runs parsing tests for a given language. The sourceDirectory specifies the root of the
+// input for the tests. The expected structure of the sourceDirectory is as follows:
+//   source
+//   ├── xsd (with the input xsd files to run through the parser)
+//   └── <langDirName> (with the expected generated code named <xsd-file>.<fileExt>
+// The test cleans up files it generates unless leaveOutput is set to true. In which case, the generate file is left
+// on disk for manual inspection under <sourceDirectory>/<langDirName>/output.
+func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool) {
+	codeDir := filepath.Join(sourceDirectory, langDirName)
+
+	outputDir := filepath.Join(codeDir, "output")
+	if leaveOutput {
+		err := PrepareOutputDir(outputDir)
+		require.NoError(t, err)
+	} else {
+		tempDir, err := ioutil.TempDir(codeDir, "output-*")
+		require.NoError(t, err)
+		defer os.RemoveAll(tempDir)
+
+		outputDir = tempDir
+	}
+
+	inputDir := filepath.Join(sourceDirectory, "xsd")
+	files, err := GetFileList(inputDir)
+	// Abort testing if the source directory doesn't include a xsd directory with inputs
+	if os.IsNotExist(err) {
+		return
+	}
+
+	require.NoError(t, err)
 	for _, file := range files {
-		parser := NewParser(&Options{
-			FilePath:            file,
-			InputDir:            xsdSrcDir,
-			OutputDir:           goCodeDir,
-			Lang:                "Go",
-			IncludeMap:          make(map[string]bool),
-			LocalNameNSMap:      make(map[string]string),
-			NSSchemaLocationMap: make(map[string]string),
-			ParseFileList:       make(map[string]bool),
-			ParseFileMap:        make(map[string][]interface{}),
-			ProtoTree:           make([]interface{}, 0),
-		})
-		err = parser.Parse()
-		assert.NoError(t, err, file)
 		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(goSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".go")
-			genCode := filepath.Join(goCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".go")
+			xsdName, err := filepath.Rel(inputDir, file)
+			require.NoError(t, err)
 
-			srcFile, err := os.Stat(srcCode)
-			assert.NoError(t, err)
+			t.Run(xsdName, func(t *testing.T) {
+				parser := NewParser(&Options{
+					FilePath:            file,
+					InputDir:            inputDir,
+					OutputDir:           outputDir,
+					Lang:                lang,
+					IncludeMap:          make(map[string]bool),
+					LocalNameNSMap:      make(map[string]string),
+					NSSchemaLocationMap: make(map[string]string),
+					ParseFileList:       make(map[string]bool),
+					ParseFileMap:        make(map[string][]interface{}),
+					ProtoTree:           make([]interface{}, 0),
+				})
+				err = parser.Parse()
+				assert.NoError(t, err, file)
+				generatedFileName := strings.TrimPrefix(file, inputDir) + "." + fileExt
+				actualFilename := filepath.Join(outputDir, generatedFileName)
 
-			genFile, err := os.Stat(genCode)
-			assert.NoError(t, err)
+				actualGenerated, err := ioutil.ReadFile(actualFilename)
+				assert.NoError(t, err)
 
-			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
+				expectedFilename := filepath.Join(codeDir, generatedFileName)
+				expectedGenerated, err := ioutil.ReadFile(expectedFilename)
+				assert.NoError(t, err)
+
+				assert.Equal(t, string(expectedGenerated), string(actualGenerated), fmt.Sprintf("error in generated code for %s", file))
+			})
 		}
 	}
 }
 
 func TestParseTypeScript(t *testing.T) {
-	err := PrepareOutputDir(tsCodeDir)
-	assert.NoError(t, err)
-	files, err := GetFileList(xsdSrcDir)
-	assert.NoError(t, err)
-	for _, file := range files {
-		parser := NewParser(&Options{
-			FilePath:            file,
-			InputDir:            xsdSrcDir,
-			OutputDir:           tsCodeDir,
-			Lang:                "TypeScript",
-			IncludeMap:          make(map[string]bool),
-			LocalNameNSMap:      make(map[string]string),
-			NSSchemaLocationMap: make(map[string]string),
-			ParseFileList:       make(map[string]bool),
-			ParseFileMap:        make(map[string][]interface{}),
-			ProtoTree:           make([]interface{}, 0),
-		})
-		err = parser.Parse()
-		assert.NoError(t, err)
-		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(tsSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".ts")
-			genCode := filepath.Join(tsCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".ts")
+	testParseForSource(t, "TypeScript", "ts", "ts", testFixtureDir, false)
+}
 
-			srcFile, err := os.Stat(srcCode)
-			assert.NoError(t, err)
-
-			genFile, err := os.Stat(genCode)
-			assert.NoError(t, err)
-
-			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
-		}
-	}
+func TestParseTypeScriptExternal(t *testing.T) {
+	testParseForSource(t, "TypeScript", "ts", "ts", externalFixtureDir, true)
 }
 
 func TestParseC(t *testing.T) {
-	err := PrepareOutputDir(cCodeDir)
-	assert.NoError(t, err)
-	files, err := GetFileList(xsdSrcDir)
-	assert.NoError(t, err)
-	for _, file := range files {
-		parser := NewParser(&Options{
-			FilePath:            file,
-			InputDir:            xsdSrcDir,
-			OutputDir:           cCodeDir,
-			Lang:                "C",
-			IncludeMap:          make(map[string]bool),
-			LocalNameNSMap:      make(map[string]string),
-			NSSchemaLocationMap: make(map[string]string),
-			ParseFileList:       make(map[string]bool),
-			ParseFileMap:        make(map[string][]interface{}),
-			ProtoTree:           make([]interface{}, 0),
-		})
-		err = parser.Parse()
-		assert.NoError(t, err)
-		if filepath.Ext(file) == ".xsd" {
-			srcCode := filepath.Join(cSrcDir, strings.TrimPrefix(file, xsdSrcDir)+".h")
-			genCode := filepath.Join(cCodeDir, strings.TrimPrefix(file, xsdSrcDir)+".h")
+	testParseForSource(t, "C", "h", "c", testFixtureDir, false)
+}
 
-			srcFile, err := os.Stat(srcCode)
-			assert.NoError(t, err)
-
-			genFile, err := os.Stat(genCode)
-			assert.NoError(t, err)
-
-			assert.Equal(t, srcFile.Size(), genFile.Size(), fmt.Sprintf("error in generated code for %s", file))
-		}
-	}
+func TestParseCExternal(t *testing.T) {
+	testParseForSource(t, "C", "h", "c", externalFixtureDir, true)
 }
 
 func TestParseJava(t *testing.T) {
-	err := PrepareOutputDir(javaCodeDir)
-	assert.NoError(t, err)
-	files, err := GetFileList(xsdSrcDir)
-	assert.NoError(t, err)
-	for _, file := range files {
-		parser := NewParser(&Options{
-			FilePath:            file,
-			InputDir:            xsdSrcDir,
-			OutputDir:           javaCodeDir,
-			Lang:                "Java",
-			IncludeMap:          make(map[string]bool),
-			LocalNameNSMap:      make(map[string]string),
-			NSSchemaLocationMap: make(map[string]string),
-			ParseFileList:       make(map[string]bool),
-			ParseFileMap:        make(map[string][]interface{}),
-			ProtoTree:           make([]interface{}, 0),
-		})
-		err = parser.Parse()
-		assert.NoError(t, err)
-	}
+	testParseForSource(t, "Java", "java", "java", testFixtureDir, false)
+}
+
+func TestParseJavaExternal(t *testing.T) {
+	testParseForSource(t, "Java", "java", "java", externalFixtureDir, true)
 }
 
 func TestParseRust(t *testing.T) {
-	err := PrepareOutputDir(rsCodeDir)
-	assert.NoError(t, err)
-	files, err := GetFileList(xsdSrcDir)
-	assert.NoError(t, err)
-	for _, file := range files {
-		parser := NewParser(&Options{
-			FilePath:            file,
-			InputDir:            xsdSrcDir,
-			OutputDir:           rsCodeDir,
-			Lang:                "Rust",
-			IncludeMap:          make(map[string]bool),
-			LocalNameNSMap:      make(map[string]string),
-			NSSchemaLocationMap: make(map[string]string),
-			ParseFileList:       make(map[string]bool),
-			ParseFileMap:        make(map[string][]interface{}),
-			ProtoTree:           make([]interface{}, 0),
-		})
-		err = parser.Parse()
-		assert.NoError(t, err)
-	}
+	testParseForSource(t, "Rust", "rs", "rs", testFixtureDir, false)
+}
+
+func TestParseRustExternal(t *testing.T) {
+	testParseForSource(t, "Rust", "rs", "rs", externalFixtureDir, true)
 }

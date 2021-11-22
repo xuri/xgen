@@ -148,7 +148,10 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 				gen.ImportEncodingXML = true
 				content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 			}
-			for memberName, memberType := range v.MemberTypes {
+			for _, member := range toSortedPairs(v.MemberTypes) {
+				memberName := member.key
+				memberType := member.value
+
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
@@ -217,11 +220,26 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s\"`\n", genGoFieldName(element.Name), plural, fieldType, element.Name)
 		}
+		if len(v.Base) > 0 {
+			// If the type is a built-in type, generate a Value field as chardata.
+			// If it's not built-in one, embed the base type in the struct for the child type
+			// to effectively inherit all of the base type's fields
+			if isGoBuiltInType(v.Base) {
+				content += fmt.Sprintf("\tValue\t%s\t`xml:\",chardata\"`\n", genGoFieldType(v.Base))
+			} else {
+				content += fmt.Sprintf("\t%s\n", genGoFieldType(v.Base))
+			}
+		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
 	return
+}
+
+func isGoBuiltInType(typeName string) bool {
+	_, builtIn := goBuildinType[typeName]
+	return builtIn
 }
 
 // GoGroup generates code for group XML schema in Go language syntax.

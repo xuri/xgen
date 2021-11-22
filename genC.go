@@ -105,7 +105,10 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 	if v.Union && len(v.MemberTypes) > 0 {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			content := "struct {\n"
-			for memberName, memberType := range v.MemberTypes {
+			for _, member := range toSortedPairs(v.MemberTypes) {
+				memberName := member.key
+				memberType := member.value
+
 				if memberType == "" { // fix order issue
 					memberType = getBasefromSimpleType(memberName, gen.ProtoTree)
 				}
@@ -175,6 +178,8 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 			}
 			content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(element.Name), plural)
 		}
+		// TODO: Implement handling of v.Base for the cases of the type being a built-in one and
+		// the case of inheritance/embedding
 		content += "}"
 		gen.StructAST[v.Name] = content
 		fieldName := genCFieldName(v.Name)

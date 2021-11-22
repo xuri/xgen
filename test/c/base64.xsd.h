@@ -28,3 +28,14 @@ typedef struct {
 	char CodeAttr; // attr, optional
 	int IdentifierAttr; // attr, optional
 } MyType6;
+
+// MyType7 ...
+typedef struct {
+	char OriginAttr; // attr
+} MyType7;
+
+// TopLevel ...
+typedef struct {
+	float CostAttr; // attr, optional
+	MyType7 Nested;
+} TopLevel;

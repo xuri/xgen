@@ -101,8 +101,9 @@ Submit tests for your changes. Go has a great test framework built in; use it!
 Take a look at existing tests for inspiration. Run the full test on your branch
 before submitting a pull request.
 
-The parser test suite, in `parser_test.go`, looks for a `data` directory in the
-root of the repository with the following structure:
+The parser test suite, in `parser_test.go` works on two sources of inputs and their expected outputs:
+1. The basic tests under `test` which include a source xsd along with the expected output for all languages.
+2. Any additional tests located in the `data` directory present at the root of the repository with the following structure:
 
 ```
 data
@@ -114,14 +115,12 @@ data
 └── ts
 ```
 
-Any `xsd` files in the `xsd` subdirectory are used as test inputs. For each
-language being tested, the generated code is placed in `<language>/output/`.
+Both sources are treated similarly. Any `xsd` files in the `xsd` subdirectory are used as test inputs. 
+For each language being tested, the generated code is placed in `<language>/output/`.
 Each `<language>` folder must contain the expected generated output from each
-input file.
+input file (see example with the basic set in `test`).
 
-The `xgen` repository contains a small example parser test in the `test`
-directory; to run it, rename (or copy) the `test` directory to `data`, then
-simply use `go test .`. (Do not use `./...`, which will cause build failures
+To run tests on both sources, run `go test .`. (Do not use `./...`, which will cause build failures
 due to redeclaration errors, since the generated code and the reference
 versions co-exist.)
 
@@ -129,6 +128,19 @@ The full test suite is available as a [separate
 repository](https://github.com/xuri/xsd). To run it, copy the top-level
 contents of this repository into the `data` directory in the `xgen` working
 copy, then run `go test .`.
+
+#### Validity of generated code
+To validate generated code can marshal and unmarshal correctly, you can use the
+test in `xml_test.go`. Those test cases require the code to have been generated already
+so it works best with the basic tests included in the `test` directory which are also used
+as the expected outputs for the `parser_test.go`. 
+
+The test can also be modified to run through new test cases of generated code in the `data` 
+directory from custom xsd. However, since the tests in `data` are external, any additional
+test cases in `xml_test.go` should not be committed. To add new xml tests to be committed, first
+include some version of a simplified xsd file in `test` along with the expected generated output. 
+Once this is done, a new xml file can be added to `xmlFixtures` and a new test case can be added
+that uses those two things. 
 
 ### Successful Changes
 

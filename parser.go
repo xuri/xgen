@@ -75,6 +75,7 @@ func (opt *Options) Parse() (err error) {
 	if err != nil {
 		return
 	}
+	defer xmlFile.Close()
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
 		opt.ParseFileMap[opt.FilePath] = opt.ProtoTree
@@ -124,7 +125,6 @@ func (opt *Options) Parse() (err error) {
 		}
 
 	}
-	defer xmlFile.Close()
 
 	if !opt.Extract {
 		opt.ParseFileList[opt.FilePath] = true
