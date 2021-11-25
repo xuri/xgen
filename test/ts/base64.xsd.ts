@@ -40,5 +40,6 @@ export class MyType7 {
 // TopLevel ...
 export class TopLevel extends MyType6  {
 	CostAttr: number | null;
+	LastUpdatedAttr: string | null;
 	Nested: MyType7;
 }
