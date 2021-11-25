@@ -61,6 +61,7 @@
             <element name="nested" type="here:MyType7" minOccurs="0" maxOccurs="1" />
           </sequence>
           <attribute name="cost" type="double"/>
+          <attribute name="LastUpdated" type="dateTime"/>
         </extension>
       </complexContent>
     </complexType>

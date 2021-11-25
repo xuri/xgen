@@ -148,7 +148,7 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 				required = ""
 			}
 			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
-			content += fmt.Sprintf("\t@XmlAttribute(name = \"%s\"%s)\n\tprotected %sAttr %s;\n", attribute.Name, required, fieldType, genJavaFieldName(attribute.Name))
+			content += fmt.Sprintf("\t@XmlAttribute(name = \"%s\"%s)\n\tprotected %s %sAttr;\n", attribute.Name, required, fieldType, genJavaFieldName(attribute.Name))
 		}
 		for _, group := range v.Groups {
 			var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))

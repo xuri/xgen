@@ -81,6 +81,8 @@ pub struct MyType7 {
 pub struct TopLevel {
 	#[serde(rename = "cost")]
 	pub cost: Option<f64>,
+	#[serde(rename = "LastUpdated")]
+	pub last_updated: Option<u8>,
 	#[serde(rename = "nested")]
 	pub nested: MyType7,
 	#[serde(flatten)]

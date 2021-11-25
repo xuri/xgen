@@ -46,20 +46,7 @@ func TestGeneratedGo(t *testing.T) {
 			remarshaled, err := xml.MarshalIndent(tc.receivingStruct, "", "    ")
 			require.NoError(t, err)
 
-			XMLEqual(t, input, remarshaled)
+			assert.Equal(t, string(input), string(remarshaled))
 		})
 	}
-}
-
-// XMLEqual checks that two inputs of raw XML represent the same logical data disregarding formatting differences
-func XMLEqual(t *testing.T, expected []byte, actual []byte) {
-	var parsedRaw interface{}
-	err := xml.Unmarshal(expected, &parsedRaw)
-	require.NoError(t, err)
-
-	var parsedRemarshaled interface{}
-	err = xml.Unmarshal(actual, &parsedRemarshaled)
-	require.NoError(t, err)
-
-	assert.Equal(t, parsedRaw, parsedRemarshaled)
 }
