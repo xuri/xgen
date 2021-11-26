@@ -32,6 +32,10 @@ func (opt *Options) OnGroup(ele xml.StartElement, protoTree []interface{}) (err 
 			}
 		}
 	}
+	if opt.Choice.Len() > 0 {
+		group.Plural = group.Plural || opt.Choice.Peek().(*Choice).Plural
+	}
+
 	if opt.ComplexType.Len() == 0 {
 		if opt.InGroup == 0 {
 			opt.InGroup++

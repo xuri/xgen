@@ -59,6 +59,10 @@
         <extension base="here:MyType6">
           <sequence>
             <element name="nested" type="here:MyType7" minOccurs="0" maxOccurs="1" />
+            <choice minOccurs="0" maxOccurs="unbounded">
+              <element name="myType1" type="here:myType1" />
+              <element name="myType2" type="here:myType2" />
+            </choice>
           </sequence>
           <attribute name="cost" type="double"/>
           <attribute name="LastUpdated" type="dateTime"/>

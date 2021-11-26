@@ -49,6 +49,7 @@ type Options struct {
 	Attribute      *Stack
 	Group          *Stack
 	AttributeGroup *Stack
+	Choice         *Stack
 }
 
 // NewParser creates a new parser options for the Parse. Useful for XML schema
@@ -94,6 +95,7 @@ func (opt *Options) Parse() (err error) {
 	opt.Attribute = NewStack()
 	opt.Group = NewStack()
 	opt.AttributeGroup = NewStack()
+	opt.Choice = NewStack()
 
 	decoder := xml.NewDecoder(xmlFile)
 	decoder.CharsetReader = charset.NewReaderLabel

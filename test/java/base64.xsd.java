@@ -76,4 +76,8 @@ public class TopLevel extends MyType6  {
 	protected String LastUpdatedAttr;
 	@XmlElement(required = true, name = "nested")
 	protected MyType7 Nested;
+	@XmlElement(required = true, name = "myType1")
+	protected List<List<Byte>> MyType1;
+	@XmlElement(required = true, name = "myType2")
+	protected List<MyType2> MyType2;
 }
