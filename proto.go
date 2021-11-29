@@ -75,6 +75,7 @@ type ComplexType struct {
 	Elements       []Element
 	Attributes     []Attribute
 	Groups         []Group
+	Choice         []Choice
 	AttributeGroup []AttributeGroup
 	Mixed          bool
 }
@@ -91,6 +92,19 @@ type Group struct {
 	Groups   []Group
 	Plural   bool
 	Ref      string
+}
+
+// Choice definitions are provided primarily for reference from
+// the XML Representation of Choice Definitions which acts as a container
+// stating that one and only one element in the selected group should be
+// present in the containing element. Generated code does not enforce the "one
+// and only one" constraint but the choice container is parsed in order to effectively
+// define if the elements it contains should be plural or not (as defined by the maxOccurs).
+// https://www.w3.org/TR/xmlschema-1/#Complex_Type_Definition_details
+type Choice struct {
+	ID       string
+	Choice   []Choice
+	Plural   bool
 }
 
 // AttributeGroup definitions do not participate in ·validation· as such, but

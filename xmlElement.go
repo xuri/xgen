@@ -57,8 +57,24 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		}
 		opt.Element.Push(&e)
 	}
+
+	if opt.Choice.Len() > 0 {
+		e.Plural = e.Plural || opt.Choice.Peek().(*Choice).Plural
+	}
+
 	if opt.ComplexType.Len() > 0 {
-		if !inElements(&e, opt.ComplexType.Peek().(*ComplexType).Elements) {
+		element, i := findElement(&e, opt.ComplexType.Peek().(*ComplexType).Elements)
+		// Handle a case where two elements with the same name and type are present in the same complex type
+		// This can happen with a Choice that includes a definition for a single value of a type along with
+		// an alternative that is an array of the same type with the same name. This tends to happen for backward
+		// compatible XSDs where a chance is introduced to allow multiple items.
+		// In this situation, the version of the element that's preserved is the one with the highest plurality
+		// since generated code for an array of a type should be compatible to unmarshal/marshal arrays of a single
+		// element
+		if element != nil && element.Type == e.Type {
+			element.Plural = element.Plural || e.Plural
+			opt.ComplexType.Peek().(*ComplexType).Elements[i] = *element
+		} else {
 			opt.ComplexType.Peek().(*ComplexType).Elements = append(opt.ComplexType.Peek().(*ComplexType).Elements, e)
 		}
 		return
@@ -83,11 +99,11 @@ func (opt *Options) EndElement(ele xml.EndElement, protoTree []interface{}) (err
 	return
 }
 
-func inElements(element *Element, elements []Element) bool {
-	for _, ele := range elements {
+func findElement(element *Element, elements []Element) (existing *Element, index int) {
+	for i, ele := range elements {
 		if element.Name == ele.Name {
-			return true
+			return &ele, i
 		}
 	}
-	return false
+	return nil, -1
 }
