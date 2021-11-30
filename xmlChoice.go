@@ -36,7 +36,6 @@ func (opt *Options) OnChoice(ele xml.StartElement, protoTree []interface{}) (err
 		choice.Plural = choice.Plural || opt.Choice.Peek().(*Choice).Plural
 	}
 
-	opt.CurrentEle = opt.InElement
 	opt.Choice.Push(&choice)
 
 	return
@@ -44,9 +43,7 @@ func (opt *Options) OnChoice(ele xml.StartElement, protoTree []interface{}) (err
 
 // EndChoice handles parsing event on the choice end elements.
 func (opt *Options) EndChoice(ele xml.EndElement, protoTree []interface{}) (err error) {
-	choice := opt.Choice.Pop().(*Choice)
-	opt.ProtoTree = append(opt.ProtoTree, choice)
-	opt.CurrentEle = ""
+	opt.Choice.Pop()
 
 	return
 }
