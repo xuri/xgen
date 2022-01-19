@@ -9,7 +9,6 @@
 package xgen
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +19,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 var (
@@ -182,17 +183,21 @@ func trimNSPrefix(str string) (name string) {
 
 // MakeFirstUpperCase make the first letter of a string uppercase.
 func MakeFirstUpperCase(s string) string {
+	return ToTitle(s)
+}
 
-	if len(s) < 2 {
-		return strings.ToUpper(s)
+func ToTitle(val string) string {
+	var buf strings.Builder
+	buf.Grow(utf8.UTFMax * len(val))
+
+	for i, rune := range val {
+		if i == 0 {
+			rune = unicode.ToUpper(rune)
+		}
+		buf.WriteRune(rune)
 	}
 
-	bts := []byte(s)
-
-	lc := bytes.ToUpper([]byte{bts[0]})
-	rest := bts[1:]
-
-	return string(bytes.Join([][]byte{lc, rest}, nil))
+	return buf.String()
 }
 
 // callFuncByName calls the no error or only error return function with
@@ -256,7 +261,7 @@ func genFieldComment(name, doc, prefix string) string {
 }
 
 type kvPair struct {
-	key string
+	key   string
 	value string
 }
 
