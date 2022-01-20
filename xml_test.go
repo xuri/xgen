@@ -2,12 +2,13 @@ package xgen
 
 import (
 	"encoding/xml"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	schema "github.com/xuri/xgen/test/go"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	schema "github.com/xuri/xgen/test/go"
 )
 
 // TestGeneratedGo runs through test cases to validate Go generated structs. Each test case
@@ -17,7 +18,7 @@ import (
 func TestGeneratedGo(t *testing.T) {
 	testCases := []struct {
 		// xmlFileName is the path to the xml fixture file to unmarshal into the receiving struct
-		xmlFileName     string
+		xmlFileName string
 		// receivingStruct is a pointer to the struct to unmarshal the xml file content into. It should match
 		// the type of the top level element present in that file
 		receivingStruct interface{}
@@ -49,4 +50,20 @@ func TestGeneratedGo(t *testing.T) {
 			assert.Equal(t, string(input), string(remarshaled))
 		})
 	}
+}
+
+func TestToTitle(t *testing.T) {
+	test := func(expected, actual string) {
+		assert.Equal(t, expected, ToTitle(actual))
+	}
+
+	test("", "")
+	test("A", "a")
+	test("Ab", "ab")
+	test("A b", "a b")
+	test("Ab cd", "ab cd")
+
+	// Test Сyrillic (`привет мир` → `hello world`)
+	test("Привет", "привет")
+	test("Привет мир", "привет мир")
 }
