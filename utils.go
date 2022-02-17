@@ -96,7 +96,7 @@ var BuildInTypes = map[string][]string{
 	"decimal":            {"float64", "number", "float", "Float", "f64"},
 	"double":             {"float64", "number", "float", "Float", "f64"},
 	"duration":           {"string", "string", "char", "String", "String"},
-	"float":              {"float", "number", "float", "Float", "f64"},
+	"float":              {"float32", "number", "float", "Float", "f64"},
 	"gDay":               {"string", "string", "char", "String", "String"},
 	"gMonth":             {"string", "string", "char", "String", "String"},
 	"gMonthDay":          {"string", "string", "char", "String", "String"},
