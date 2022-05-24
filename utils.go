@@ -24,8 +24,9 @@ import (
 )
 
 var (
-	matchFirstCap = regexp.MustCompile("([A-Z])([A-Z][a-z])")
-	matchAllCap   = regexp.MustCompile("([a-z0-9])([A-Z])")
+	matchFirstCap  = regexp.MustCompile("([A-Z])([A-Z][a-z])")
+	matchAllCap    = regexp.MustCompile("([a-z0-9])([A-Z])")
+	fieldNameCount map[string]int
 )
 
 // ToSnakeCase converts the provided string to snake_case.
