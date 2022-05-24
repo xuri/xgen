@@ -37,6 +37,7 @@ var cBuildInType = map[string]bool{
 // GenC generates C programming language source code for XML schema definition
 // files.
 func (gen *CodeGenerator) GenC() error {
+	fieldNameCount = make(map[string]int)
 	for _, ele := range gen.ProtoTree {
 		if ele == nil {
 			continue
@@ -61,7 +62,7 @@ func innerArray(dataType string) (string, bool) {
 	return dataType, false
 }
 
-func genCFieldName(name string) (fieldName string) {
+func genCFieldName(name string, unique bool) (fieldName string) {
 	for _, str := range strings.Split(name, ":") {
 		fieldName += MakeFirstUpperCase(str)
 	}
@@ -71,6 +72,12 @@ func genCFieldName(name string) (fieldName string) {
 	}
 	fieldName = tmp
 	fieldName = strings.Replace(fieldName, "-", "", -1)
+	if unique {
+		fieldNameCount[fieldName]++
+		if count := fieldNameCount[fieldName]; count != 1 {
+			fieldName = fmt.Sprintf("%s%d", fieldName, count)
+		}
+	}
 	return
 }
 
@@ -95,9 +102,9 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 	if v.List {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			fieldType := genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))
-			content := fmt.Sprintf("%s %s[];\n", genCFieldType(fieldType), genCFieldName(v.Name))
+			content := fmt.Sprintf("%s %s[];\n", genCFieldType(fieldType), genCFieldName(v.Name, false))
 			gen.StructAST[v.Name] = content
-			fieldName := genCFieldName(v.Name)
+			fieldName := genCFieldName(v.Name, true)
 			gen.Field += fmt.Sprintf("%stypedef %s", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 			return
 		}
@@ -117,11 +124,11 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 				if fieldType, ok = innerArray(genCFieldType(memberType)); ok {
 					plural = "[]"
 				}
-				content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(memberName), plural)
+				content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(memberName, false), plural)
 			}
 			content += "}"
 			gen.StructAST[v.Name] = content
-			fieldName := genCFieldName(v.Name)
+			fieldName := genCFieldName(v.Name, true)
 			gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 		}
 		return
@@ -132,8 +139,8 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 		if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree))); ok {
 			plural = "[]"
 		}
-		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
-		fieldName := genCFieldName(v.Name)
+		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name, false), plural)
+		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 	}
 	return
@@ -146,7 +153,7 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 		content := "struct {\n"
 		for _, attrGroup := range v.AttributeGroup {
 			fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
-			content += fmt.Sprintf("\t%s %s;\n", genCFieldType(fieldType), genCFieldName(attrGroup.Name))
+			content += fmt.Sprintf("\t%s %s;\n", genCFieldType(fieldType), genCFieldName(attrGroup.Name, false))
 		}
 
 		for _, attribute := range v.Attributes {
@@ -159,7 +166,7 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 			if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name), plural, optional)
+			content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name, false), plural, optional)
 		}
 
 		for _, group := range v.Groups {
@@ -167,7 +174,7 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 			if group.Plural {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name), plural)
+			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name, false), plural)
 		}
 
 		for _, element := range v.Elements {
@@ -176,13 +183,13 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 			if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))); ok || element.Plural {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(element.Name), plural)
+			content += fmt.Sprintf("\t%s %s%s;\n", fieldType, genCFieldName(element.Name, false), plural)
 		}
 		// TODO: Implement handling of v.Base for the cases of the type being a built-in one and
 		// the case of inheritance/embedding
 		content += "}"
 		gen.StructAST[v.Name] = content
-		fieldName := genCFieldName(v.Name)
+		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 	return
@@ -197,7 +204,7 @@ func (gen *CodeGenerator) CGroup(v *Group) {
 			if element.Plural {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)), genCFieldName(element.Name), plural)
+			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree)), genCFieldName(element.Name, false), plural)
 		}
 
 		for _, group := range v.Groups {
@@ -205,12 +212,12 @@ func (gen *CodeGenerator) CGroup(v *Group) {
 			if group.Plural {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name), plural)
+			content += fmt.Sprintf("\t%s %s%s;\n", genCFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)), genCFieldName(group.Name, false), plural)
 		}
 
 		content += "}"
 		gen.StructAST[v.Name] = content
-		fieldName := genCFieldName(v.Name)
+		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 	return
@@ -230,11 +237,11 @@ func (gen *CodeGenerator) CAttributeGroup(v *AttributeGroup) {
 			if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))); ok {
 				plural = "[]"
 			}
-			content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name), plural, optional)
+			content += fmt.Sprintf("\t%s %sAttr%s; // attr%s\n", fieldType, genCFieldName(attribute.Name, false), plural, optional)
 		}
 		content += "}"
 		gen.StructAST[v.Name] = content
-		fieldName := genCFieldName(v.Name)
+		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
 }
@@ -247,7 +254,7 @@ func (gen *CodeGenerator) CElement(v *Element) {
 		if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
 			plural = "[]"
 		}
-		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
+		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name, false), plural)
 		gen.Field += fmt.Sprintf("\ntypedef %s;\n", gen.StructAST[v.Name])
 	}
 }
@@ -260,8 +267,8 @@ func (gen *CodeGenerator) CAttribute(v *Attribute) {
 		if fieldType, ok = innerArray(genCFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))); ok || v.Plural {
 			plural = "[]"
 		}
-		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name), plural)
-		fieldName := genCFieldName(v.Name)
+		gen.StructAST[v.Name] = fmt.Sprintf("%s %s%s", fieldType, genCFieldName(v.Name, false), plural)
+		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 	}
 }
