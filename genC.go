@@ -143,7 +143,6 @@ func (gen *CodeGenerator) CSimpleType(v *SimpleType) {
 		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name])
 	}
-	return
 }
 
 // CComplexType generates code for complex type XML schema in C language
@@ -192,7 +191,6 @@ func (gen *CodeGenerator) CComplexType(v *ComplexType) {
 		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
-	return
 }
 
 // CGroup generates code for group XML schema in C language syntax.
@@ -220,7 +218,6 @@ func (gen *CodeGenerator) CGroup(v *Group) {
 		fieldName := genCFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stypedef %s %s;\n", genFieldComment(fieldName, v.Doc, "//"), gen.StructAST[v.Name], fieldName)
 	}
-	return
 }
 
 // CAttributeGroup generates code for attribute group XML schema in C language

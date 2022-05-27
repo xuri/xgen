@@ -139,7 +139,6 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 		fieldName := genTypeScriptFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%sexport type %s =%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // TypeScriptComplexType generates code for complex type XML schema in TypeScript language
@@ -185,7 +184,6 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 
 		gen.Field += fmt.Sprintf("%sexport class %s%s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, typeExtension, gen.StructAST[v.Name])
 	}
-	return
 }
 
 func isBuiltInTypeScriptType(typeName string) bool {
@@ -210,7 +208,6 @@ func (gen *CodeGenerator) TypeScriptGroup(v *Group) {
 		fieldName := genTypeScriptFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%sexport class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // TypeScriptAttributeGroup generates code for attribute group XML schema in TypeScript language
@@ -230,7 +227,6 @@ func (gen *CodeGenerator) TypeScriptAttributeGroup(v *AttributeGroup) {
 		fieldName := genTypeScriptFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%sexport class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // TypeScriptElement generates code for element XML schema in TypeScript language syntax.
@@ -240,7 +236,6 @@ func (gen *CodeGenerator) TypeScriptElement(v *Element) {
 		fieldName := genTypeScriptFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%sexport type %s =%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // TypeScriptAttribute generates code for attribute XML schema in TypeScript language syntax.
@@ -250,5 +245,4 @@ func (gen *CodeGenerator) TypeScriptAttribute(v *Attribute) {
 		fieldName := genTypeScriptFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%sexport type %s =%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }

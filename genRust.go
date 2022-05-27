@@ -206,7 +206,6 @@ func (gen *CodeGenerator) RustSimpleType(v *SimpleType) {
 		fieldName := genRustStructName(v.Name, true)
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // RustComplexType generates code for complex type XML schema in Rust language
@@ -262,7 +261,6 @@ func (gen *CodeGenerator) RustComplexType(v *ComplexType) {
 		fieldName := genRustStructName(v.Name, true)
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 func isRustBuiltInType(typeName string) bool {
@@ -296,7 +294,6 @@ func (gen *CodeGenerator) RustGroup(v *Group) {
 		fieldName := genRustStructName(v.Name, true)
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // RustAttributeGroup generates code for attribute group XML schema in Rust language
@@ -315,7 +312,6 @@ func (gen *CodeGenerator) RustAttributeGroup(v *AttributeGroup) {
 		fieldName := genRustStructName(v.Name, true)
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // RustElement generates code for element XML schema in Rust language syntax.
@@ -330,7 +326,6 @@ func (gen *CodeGenerator) RustElement(v *Element) {
 		}
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // RustAttribute generates code for attribute XML schema in Rust language syntax.
@@ -345,5 +340,4 @@ func (gen *CodeGenerator) RustAttribute(v *Attribute) {
 		}
 		gen.Field += fmt.Sprintf("\n%s#[derive(Debug, Deserialize, Serialize, PartialEq)]\npub struct %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }

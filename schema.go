@@ -16,7 +16,6 @@ func (opt *Options) prepareLocalNameNSMap(element xml.StartElement) {
 			opt.LocalNameNSMap[ele.Name.Local] = ele.Value
 		}
 	}
-	return
 }
 
 func (opt *Options) prepareNSSchemaLocationMap(element xml.StartElement) {
@@ -40,7 +39,6 @@ func (opt *Options) prepareNSSchemaLocationMap(element xml.StartElement) {
 			opt.NSSchemaLocationMap[currentNS] = ele.Value
 		}
 	}
-	return
 }
 
 func (opt *Options) parseNS(str string) (ns string) {

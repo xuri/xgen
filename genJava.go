@@ -136,7 +136,6 @@ func (gen *CodeGenerator) JavaSimpleType(v *SimpleType) {
 		fieldName := genJavaFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%s@XmlAccessorType(XmlAccessType.FIELD)\n@XmlAttribute(required = true, name = \"%s\")\npublic class %s {\n%s}\n", genFieldComment(fieldName, v.Doc, "//"), v.Name, fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // JavaComplexType generates code for complex type XML schema in Java language
@@ -190,7 +189,6 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 
 		gen.Field += fmt.Sprintf("%spublic class %s%s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, typeExtension, gen.StructAST[v.Name])
 	}
-	return
 }
 
 func isBuiltInJavaType(typeName string) bool {
@@ -223,7 +221,6 @@ func (gen *CodeGenerator) JavaGroup(v *Group) {
 		fieldName := genJavaFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // JavaAttributeGroup generates code for attribute group XML schema in Java language
@@ -244,7 +241,6 @@ func (gen *CodeGenerator) JavaAttributeGroup(v *AttributeGroup) {
 		fieldName := genJavaFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%spublic class %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
-	return
 }
 
 // JavaElement generates code for element XML schema in Java language syntax.
@@ -258,7 +254,6 @@ func (gen *CodeGenerator) JavaElement(v *Element) {
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("\n@XmlAccessorType(XmlAccessType.FIELD)\n@XmlElement(required = true, name = \"%s\")\npublic class %s {\n%s}\n", v.Name, genJavaFieldName(v.Name, true), gen.StructAST[v.Name])
 	}
-	return
 }
 
 // JavaAttribute generates code for attribute XML schema in Java language syntax.
@@ -272,5 +267,4 @@ func (gen *CodeGenerator) JavaAttribute(v *Attribute) {
 		gen.StructAST[v.Name] = content
 		gen.Field += fmt.Sprintf("\n@XmlAccessorType(XmlAccessType.FIELD)\n@XmlAttribute(required = true, name = \"%s\")\npublic class %s {\n%s}\n", v.Name, genJavaFieldName(v.Name, true), gen.StructAST[v.Name])
 	}
-	return
 }
