@@ -45,7 +45,7 @@ func (gen *CodeGenerator) GenC() error {
 		funcName := fmt.Sprintf("C%s", reflect.TypeOf(ele).String()[6:])
 		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
-	f, err := os.Create(gen.File + ".h")
+	f, err := os.Create(gen.FileWithExtension(".h"))
 	if err != nil {
 		return err
 	}

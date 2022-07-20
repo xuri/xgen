@@ -67,7 +67,7 @@ func (gen *CodeGenerator) GenGo() error {
 		funcName := fmt.Sprintf("Go%s", reflect.TypeOf(ele).String()[6:])
 		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
-	f, err := os.Create(gen.File + ".go")
+	f, err := os.Create(gen.FileWithExtension(".go"))
 	if err != nil {
 		return err
 	}
@@ -325,4 +325,14 @@ func (gen *CodeGenerator) GoAttribute(v *Attribute) {
 		fieldName := genGoFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
 	}
+}
+
+func (gen *CodeGenerator) FileWithExtension(extension string) string {
+	if !strings.HasPrefix(extension, ".") {
+		extension = "." + extension
+	}
+	if strings.HasSuffix(gen.File, extension) {
+		return gen.File
+	}
+	return gen.File + extension
 }

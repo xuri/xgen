@@ -40,7 +40,7 @@ func (gen *CodeGenerator) GenJava() error {
 		funcName := fmt.Sprintf("Java%s", reflect.TypeOf(ele).String()[6:])
 		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
-	f, err := os.Create(gen.File + ".java")
+	f, err := os.Create(gen.FileWithExtension(".java"))
 	if err != nil {
 		return err
 	}
