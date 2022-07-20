@@ -104,7 +104,7 @@ func (gen *CodeGenerator) GenRust() error {
 		funcName := fmt.Sprintf("Rust%s", reflect.TypeOf(ele).String()[6:])
 		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
-	f, err := os.Create(gen.File + ".rs")
+	f, err := os.Create(gen.FileWithExtension(".rs"))
 	if err != nil {
 		return err
 	}

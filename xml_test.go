@@ -67,3 +67,46 @@ func TestToTitle(t *testing.T) {
 	test("Привет", "привет")
 	test("Привет мир", "привет мир")
 }
+
+func TestCodeGeneratorFileWithExtension(t *testing.T) {
+	testCases := []struct {
+		description string
+		filename    string
+		extension   string
+		expected    string
+	}{
+		{
+			description: "filename without extension and extension without period should add extension",
+			filename:    "foo",
+			extension:   "java",
+			expected:    "foo.java",
+		},
+		{
+			description: "filename without extension and extension with period should add extension",
+			filename:    "foo",
+			extension:   ".java",
+			expected:    "foo.java",
+		},
+		{
+			description: "filename with extension already should not add extension",
+			filename:    "foo.java",
+			extension:   ".java",
+			expected:    "foo.java",
+		},
+		{
+			description: "filename with different extension should add extension",
+			filename:    "foo.bar",
+			extension:   ".java",
+			expected:    "foo.bar.java",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			gen := CodeGenerator{
+				File: tc.filename,
+			}
+			actual := gen.FileWithExtension(tc.extension)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}

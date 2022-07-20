@@ -36,7 +36,7 @@ func (gen *CodeGenerator) GenTypeScript() error {
 		funcName := fmt.Sprintf("TypeScript%s", reflect.TypeOf(ele).String()[6:])
 		callFuncByName(gen, funcName, []reflect.Value{reflect.ValueOf(ele)})
 	}
-	f, err := os.Create(gen.File + ".ts")
+	f, err := os.Create(gen.FileWithExtension(".ts"))
 	if err != nil {
 		return err
 	}
