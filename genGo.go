@@ -25,6 +25,7 @@ type CodeGenerator struct {
 	Package           string
 	ImportTime        bool // For Go language
 	ImportEncodingXML bool // For Go language
+	NoXMLName         bool // For Go language
 	ProtoTree         []interface{}
 	StructAST         map[string]string
 }
@@ -149,7 +150,7 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 		if _, ok := gen.StructAST[v.Name]; !ok {
 			content := " struct {\n"
 			fieldName := genGoFieldName(v.Name, true)
-			if fieldName != v.Name {
+			if fieldName != v.Name && !gen.NoXMLName {
 				gen.ImportEncodingXML = true
 				content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 			}
@@ -182,7 +183,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
 		fieldName := genGoFieldName(v.Name, true)
-		if fieldName != v.Name {
+		if fieldName != v.Name && !gen.NoXMLName {
 			gen.ImportEncodingXML = true
 			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}
@@ -250,7 +251,7 @@ func (gen *CodeGenerator) GoGroup(v *Group) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
 		fieldName := genGoFieldName(v.Name, true)
-		if fieldName != v.Name {
+		if fieldName != v.Name && !gen.NoXMLName{
 			gen.ImportEncodingXML = true
 			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}
@@ -282,7 +283,7 @@ func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " struct {\n"
 		fieldName := genGoFieldName(v.Name, true)
-		if fieldName != v.Name {
+		if fieldName != v.Name && !gen.NoXMLName{
 			gen.ImportEncodingXML = true
 			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}

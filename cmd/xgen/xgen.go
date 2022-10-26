@@ -35,11 +35,12 @@ import (
 // Config holds user-defined overrides and filters that are used when
 // generating source code from an XSD document.
 type Config struct {
-	I       string
-	O       string
-	Pkg     string
-	Lang    string
-	Version string
+	I         string
+	O         string
+	Pkg       string
+	Lang      string
+	Version   string
+	NoXMLName bool
 }
 
 // Cfg are the default config for xgen. The default package name and output
@@ -62,13 +63,14 @@ var SupportLang = map[string]bool{
 func parseFlags() *Config {
 	iPtr := flag.String("i", "", "Input file path or directory for the XML schema definition")
 	oPtr := flag.String("o", "xgen_out", "Output file path or directory for the generated code")
+	noXmlName := flag.Bool("noxml", false, "Don't add xmlName fields")
 	pkgPtr := flag.String("p", "", "Specify the package name")
 	langPtr := flag.String("l", "", "Specify the language of generated code")
 	verPtr := flag.Bool("v", false, "Show version and exit")
 	helpPtr := flag.Bool("h", false, "Show this help and exit")
 	flag.Parse()
 	if *helpPtr {
-		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2021 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
+		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2021 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  --noxml     \tDon't generate XMLName fields on structs (Go)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
 		os.Exit(0)
 	}
 	if *verPtr {
@@ -85,6 +87,9 @@ func parseFlags() *Config {
 		os.Exit(1)
 	}
 	Cfg.Lang = *langPtr
+	if *noXmlName {
+		Cfg.NoXMLName = *noXmlName
+	}
 	if *oPtr != "" {
 		Cfg.O = *oPtr
 	}
@@ -110,6 +115,7 @@ func main() {
 			FilePath:            file,
 			InputDir:            cfg.I,
 			OutputDir:           cfg.O,
+			NoXMLName:           cfg.NoXMLName,
 			Lang:                cfg.Lang,
 			Package:             cfg.Pkg,
 			IncludeMap:          make(map[string]bool),

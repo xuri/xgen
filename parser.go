@@ -26,6 +26,7 @@ type Options struct {
 	FileDir             string
 	InputDir            string
 	OutputDir           string
+	NoXMLName           bool
 	Extract             bool
 	Lang                string
 	Package             string
@@ -140,6 +141,7 @@ func (opt *Options) Parse() (err error) {
 			Lang:      opt.Lang,
 			Package:   opt.Package,
 			File:      path,
+			NoXMLName: opt.NoXMLName,
 			ProtoTree: opt.ProtoTree,
 			StructAST: map[string]string{},
 		}
