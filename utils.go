@@ -1,4 +1,4 @@
-// Copyright 2020 - 2021 The xgen Authors. All rights reserved. Use of this
+// Copyright 2020 - 2022 The xgen Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -90,9 +90,9 @@ var BuildInTypes = map[string][]string{
 	"Name":               {"string", "string", "char", "String", "String"},
 	"QName":              {"xml.Name", "any", "char", "String", "String"},
 	"anyURI":             {"string", "string", "char", "QName", "String"},
-	"base64Binary":       {"[]byte", "Uint8Array", "char[]", "List<Byte>", "String"},
+	"base64Binary":       {"string", "Uint8Array", "char[]", "List<Byte>", "String"},
 	"boolean":            {"bool", "boolean", "bool", "Boolean", "bool"},
-	"byte":               {"byte", "any", "char[]", "Byte", "u8"},
+	"byte":               {"int8", "any", "char[]", "Byte", "u8"},
 	"date":               {"string", "string", "char", "String", "u8"},
 	"dateTime":           {"string", "string", "char", "String", "u8"},
 	"decimal":            {"float64", "number", "float", "Float", "f64"},
@@ -104,7 +104,7 @@ var BuildInTypes = map[string][]string{
 	"gMonthDay":          {"string", "string", "char", "String", "String"},
 	"gYear":              {"string", "string", "char", "String", "String"},
 	"gYearMonth":         {"string", "string", "char", "String", "String"},
-	"hexBinary":          {"[]byte", "Uint8Array", "char[]", "List<Byte>", "String"},
+	"hexBinary":          {"string", "Uint8Array", "char[]", "List<Byte>", "String"},
 	"int":                {"int", "number", "int", "Integer", "i32"},
 	"integer":            {"int", "number", "int", "Integer", "i32"},
 	"language":           {"string", "string", "char", "String", "String"},
@@ -118,7 +118,7 @@ var BuildInTypes = map[string][]string{
 	"string":             {"string", "string", "char", "String", "String"},
 	"time":               {"time.Time", "string", "char", "String", "String"},
 	"token":              {"string", "string", "char", "String", "String"},
-	"unsignedByte":       {"byte", "any", "char", "Byte", "u8"},
+	"unsignedByte":       {"uint8", "any", "char", "Byte", "u8"},
 	"unsignedInt":        {"uint32", "number", "unsigned int", "Integer", "u32"},
 	"unsignedLong":       {"uint64", "number", "unsigned int", "Long", "u64"},
 	"unsignedShort":      {"uint16", "number", "unsigned int", "Short", "u16"},
