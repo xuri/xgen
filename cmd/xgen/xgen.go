@@ -12,6 +12,7 @@
 //        -o <path> Output file path or directory for the generated code
 //        -p        Specify the package name
 //        -l        Specify the language of generated code (Go/C/Java/Rust/TypeScript)
+//        -inc      Ignore name conflict in Golang
 //        -h        Output this help and exit
 //        -v        Output version and exit
 //
@@ -36,6 +37,7 @@ import (
 // generating source code from an XSD document.
 type Config struct {
 	I       string
+	Inc     bool
 	O       string
 	Pkg     string
 	Lang    string
@@ -66,6 +68,7 @@ func parseFlags() *Config {
 	langPtr := flag.String("l", "", "Specify the language of generated code")
 	verPtr := flag.Bool("v", false, "Show version and exit")
 	helpPtr := flag.Bool("h", false, "Show this help and exit")
+	incPtr := flag.Bool("inc", false, "Ignore the name conflict between field name and tag")
 	flag.Parse()
 	if *helpPtr {
 		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2022 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
@@ -84,6 +87,9 @@ func parseFlags() *Config {
 		fmt.Println("must specify the language of generated code (Go/C/Java/Rust/TypeScript)")
 		os.Exit(1)
 	}
+
+	Cfg.Inc = *incPtr
+
 	Cfg.Lang = *langPtr
 	if *oPtr != "" {
 		Cfg.O = *oPtr
@@ -112,6 +118,7 @@ func main() {
 			OutputDir:           cfg.O,
 			Lang:                cfg.Lang,
 			Package:             cfg.Pkg,
+			IgnoreNameConflict:  cfg.Inc,
 			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),
