@@ -29,6 +29,7 @@ type Options struct {
 	Extract             bool
 	Lang                string
 	Package             string
+	IgnoreNameConflict  bool
 	IncludeMap          map[string]bool
 	LocalNameNSMap      map[string]string
 	NSSchemaLocationMap map[string]string
