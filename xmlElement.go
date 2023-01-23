@@ -48,6 +48,11 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 				e.Plural = true
 			}
 		}
+		if attr.Name.Local == "minOccurs" {
+			if attr.Value == "0" {
+				e.Optional = true
+			}
+		}
 	}
 
 	if e.Type == "" {
