@@ -21,8 +21,16 @@ xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用
 
 首先安装命令行工具:
 
-```text
-go get github.com/xuri/xgen
+如果您使用的是 Go 1.17 及更高版本，请使用 `go install` 安装可执行文件
+
+```sh
+去安装 github.com/xuri/xgen/cmd/xgen@latest
+```
+
+如果您使用的是 Go 1.16 及更早版本，请使用 `go get` 安装可执行文件
+
+```sh
+去获取-u -v github.com/xuri/xgen/cmd/...
 ```
 
 下面的命令将遍历 `xsd` 目录中的 XML 模式定义文件，并在 `output` 目录中生成 Go 语言结构体声明代码。

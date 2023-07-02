@@ -21,6 +21,14 @@ xgen is a library written in pure Go providing a set of functions that allow you
 
 Install the command line tool first.
 
+If you're using Go 1.17 and later, installing executables with `go install`
+
+```sh
+go install github.com/xuri/xgen/cmd/xgen@latest
+```
+
+If you're using Go 1.16 and earlier, installing executables with `go get`
+
 ```sh
 go get -u -v github.com/xuri/xgen/cmd/...
 ```
