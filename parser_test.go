@@ -1,4 +1,4 @@
-// Copyright 2020 - 2021 The xgen Authors. All rights reserved. Use of this
+// Copyright 2020 - 2024 The xgen Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -10,13 +10,14 @@ package xgen
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -38,9 +39,11 @@ func TestParseGoExternal(t *testing.T) {
 
 // testParseForSource runs parsing tests for a given language. The sourceDirectory specifies the root of the
 // input for the tests. The expected structure of the sourceDirectory is as follows:
-//   source
-//   ├── xsd (with the input xsd files to run through the parser)
-//   └── <langDirName> (with the expected generated code named <xsd-file>.<fileExt>
+//
+//	source
+//	├── xsd (with the input xsd files to run through the parser)
+//	└── <langDirName> (with the expected generated code named <xsd-file>.<fileExt>
+//
 // The test cleans up files it generates unless leaveOutput is set to true. In which case, the generate file is left
 // on disk for manual inspection under <sourceDirectory>/<langDirName>/output.
 func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool) {
