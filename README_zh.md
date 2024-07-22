@@ -30,7 +30,7 @@ go install github.com/xuri/xgen/cmd/xgen@latest
 如果您使用的是 Go 1.16 及更早版本，请使用 `go get` 安装可执行文件
 
 ```sh
-go install -u -v github.com/xuri/xgen/cmd/...
+go get -u -v github.com/xuri/xgen/cmd/...
 ```
 
 下面的命令将遍历 `xsd` 目录中的 XML 模式定义文件，并在 `output` 目录中生成 Go 语言结构体声明代码。
