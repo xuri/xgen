@@ -1,4 +1,4 @@
-// Copyright 2020 - 2021 The xgen Authors. All rights reserved. Use of this
+// Copyright 2020 - 2024 The xgen Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -102,9 +102,9 @@ type Group struct {
 // define if the elements it contains should be plural or not (as defined by the maxOccurs).
 // https://www.w3.org/TR/xmlschema-1/#Complex_Type_Definition_details
 type Choice struct {
-	ID       string
-	Choice   []Choice
-	Plural   bool
+	ID     string
+	Choice []Choice
+	Plural bool
 }
 
 // AttributeGroup definitions do not participate in ·validation· as such, but

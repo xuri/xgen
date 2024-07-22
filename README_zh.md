@@ -6,7 +6,7 @@
     <a href="https://github.com/xuri/xgen/actions?workflow=Go"><img src="https://github.com/xuri/xgen/workflows/Go/badge.svg?branch=master" alt="Build Status"></a>
     <a href="https://codecov.io/gh/xuri/xgen"><img src="https://codecov.io/gh/xuri/xgen/branch/master/graph/badge.svg" alt="Code Coverage"></a>
     <a href="https://goreportcard.com/report/github.com/xuri/xgen"><img src="https://goreportcard.com/badge/github.com/xuri/xgen" alt="Go Report Card"></a>
-    <a href="https://pkg.go.dev/github.com/xuri/xgen?tab=doc"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white" alt="go.dev"></a>
+    <a href="https://pkg.go.dev/github.com/xuri/xgen"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white" alt="go.dev"></a>
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
     <a href="https://www.paypal.me/xuri"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" alt="Donate"></a>
 </p>
@@ -15,7 +15,7 @@
 
 ## Introduction
 
-xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.10 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen?tab=doc)。
+xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.10 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen)。
 
 `xgen` 命令可将 XML 模式定义文件编译为多语言类型或类声明的代码。
 
@@ -24,13 +24,13 @@ xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用
 如果您使用的是 Go 1.17 及更高版本，请使用 `go install` 安装可执行文件
 
 ```sh
-去安装 github.com/xuri/xgen/cmd/xgen@latest
+go install github.com/xuri/xgen/cmd/xgen@latest
 ```
 
 如果您使用的是 Go 1.16 及更早版本，请使用 `go get` 安装可执行文件
 
 ```sh
-去获取-u -v github.com/xuri/xgen/cmd/...
+go get -u -v github.com/xuri/xgen/cmd/...
 ```
 
 下面的命令将遍历 `xsd` 目录中的 XML 模式定义文件，并在 `output` 目录中生成 Go 语言结构体声明代码。
