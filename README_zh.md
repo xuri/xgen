@@ -15,14 +15,22 @@
 
 ## Introduction
 
-xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.18 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen)。
+xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.10 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen)。
 
 `xgen` 命令可将 XML 模式定义文件编译为多语言类型或类声明的代码。
 
 首先安装命令行工具:
 
+如果您使用的是 Go 1.17 及更高版本，请使用 `go install` 安装可执行文件
+
 ```sh
 go install github.com/xuri/xgen/cmd/xgen@latest
+```
+
+如果您使用的是 Go 1.16 及更早版本，请使用 `go get` 安装可执行文件
+
+```sh
+go install -u -v github.com/xuri/xgen/cmd/...
 ```
 
 下面的命令将遍历 `xsd` 目录中的 XML 模式定义文件，并在 `output` 目录中生成 Go 语言结构体声明代码。
