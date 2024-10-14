@@ -49,7 +49,11 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 			}
 		}
 		if attr.Name.Local == "minOccurs" {
-			if attr.Value == "0" {
+			var minOccurs int
+			if minOccurs, err = strconv.Atoi(attr.Value); err != nil {
+				return
+			}
+			if minOccurs == 0 {
 				e.Optional = true
 			}
 		}
