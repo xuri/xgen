@@ -42,6 +42,7 @@ type Options struct {
 	InGroup          int
 	InUnion          bool
 	InAttributeGroup bool
+	InPluralSequence []bool
 
 	SimpleType     *Stack
 	ComplexType    *Stack

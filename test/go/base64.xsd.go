@@ -46,6 +46,21 @@ type MyType7 struct {
 	Value      string `xml:",chardata"`
 }
 
+// MyType8 ...
+type MyType8 struct {
+	Title []*MyType4 `xml:"title"`
+}
+
+// MyType9 ...
+type MyType9 struct {
+	Title []*MyType4 `xml:"title"`
+}
+
+// MyType10 ...
+type MyType10 struct {
+	Title *MyType4 `xml:"title"`
+}
+
 // TopLevel ...
 type TopLevel struct {
 	CostAttr        float64    `xml:"cost,attr,omitempty"`

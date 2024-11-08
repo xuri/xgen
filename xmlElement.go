@@ -50,6 +50,10 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		}
 	}
 
+	if len(opt.InPluralSequence) > 0 && opt.InPluralSequence[len(opt.InPluralSequence)-1] {
+		e.Plural = true
+	}
+
 	if e.Type == "" {
 		e.Type, err = opt.GetValueType(e.Name, protoTree)
 		if err != nil {
