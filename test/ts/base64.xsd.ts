@@ -37,6 +37,21 @@ export class MyType7 {
 	Value: string;
 }
 
+// MyType8 ...
+export class MyType8 {
+	Title: Array<MyType4>;
+}
+
+// MyType9 ...
+export class MyType9 {
+	Title: Array<MyType4>;
+}
+
+// MyType10 ...
+export class MyType10 {
+	Title: MyType4;
+}
+
 // TopLevel ...
 export class TopLevel extends MyType6  {
 	CostAttr: number | null;

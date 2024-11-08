@@ -76,6 +76,30 @@ pub struct MyType7 {
 }
 
 
+// MyType8 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType8 {
+	#[serde(rename = "title")]
+	pub title: Vec<MyType4>,
+}
+
+
+// MyType9 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType9 {
+	#[serde(rename = "title")]
+	pub title: Vec<MyType4>,
+}
+
+
+// MyType10 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType10 {
+	#[serde(rename = "title")]
+	pub title: MyType4,
+}
+
+
 // TopLevel ...
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct TopLevel {
