@@ -109,7 +109,7 @@ func (gen *CodeGenerator) GenRust() error {
 		return err
 	}
 	defer f.Close()
-	var extern = `#[macro_use]
+	extern := `#[macro_use]
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_xml_rs;
