@@ -1,4 +1,4 @@
-// Copyright 2020 - 2022 The xgen Authors. All rights reserved. Use of this
+// Copyright 2020 - 2025 The xgen Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 //
@@ -66,7 +66,7 @@ func PrepareOutputDir(path string) error {
 	}
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		if err := os.MkdirAll(path, 0755); err != nil {
+		if err := os.MkdirAll(path, 0o755); err != nil {
 			return err
 		}
 	}
@@ -129,7 +129,7 @@ var BuildInTypes = map[string][]string{
 }
 
 func getBuildInTypeByLang(value, lang string) (buildType string, ok bool) {
-	var supportLang = map[string]int{
+	supportLang := map[string]int{
 		"Go":         0,
 		"TypeScript": 1,
 		"C":          2,

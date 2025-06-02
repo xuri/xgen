@@ -21,7 +21,7 @@ func (opt *Options) OnExtension(ele xml.StartElement, protoTree []interface{}) (
 				return
 			}
 			if opt.ComplexType.Peek() != nil {
-				var complexType = opt.ComplexType.Peek().(*ComplexType)
+				complexType := opt.ComplexType.Peek().(*ComplexType)
 				complexType.Base, err = opt.GetValueType(valueType, protoTree)
 				if err != nil {
 					return
