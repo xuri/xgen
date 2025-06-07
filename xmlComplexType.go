@@ -16,6 +16,7 @@ func (opt *Options) OnComplexType(ele xml.StartElement, protoTree []interface{})
 	if opt.ComplexType.Len() > 0 {
 		e := opt.Element.Pop().(*Element)
 		opt.ComplexType.Push(&ComplexType{
+			Doc:  e.Doc,
 			Name: e.Name,
 		})
 	}
@@ -28,9 +29,12 @@ func (opt *Options) OnComplexType(ele xml.StartElement, protoTree []interface{})
 				c.Name = attr.Value
 			}
 		}
-		if c.Name == "" {
+		if opt.Element.Len() > 0 {
 			e := opt.Element.Pop().(*Element)
-			c.Name = e.Name
+			c.Doc = e.Doc
+			if c.Name == "" {
+				c.Name = e.Name
+			}
 		}
 		opt.ComplexType.Push(&c)
 	}
