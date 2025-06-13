@@ -50,11 +50,13 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		}
 	}
 
+	alreadyPushedElement := false
 	if e.Type == "" {
 		e.Type, err = opt.GetValueType(e.Name, protoTree)
 		if err != nil {
 			return
 		}
+		alreadyPushedElement = true
 		opt.Element.Push(&e)
 	}
 
@@ -87,7 +89,9 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		return
 	}
 
-	opt.Element.Push(&e)
+	if !alreadyPushedElement {
+		opt.Element.Push(&e)
+	}
 	return
 }
 
