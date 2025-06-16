@@ -50,11 +50,13 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		}
 	}
 
+	alreadyPushedElement := false
 	if e.Type == "" {
 		e.Type, err = opt.GetValueType(e.Name, protoTree)
 		if err != nil {
 			return
 		}
+		alreadyPushedElement = true
 		opt.Element.Push(&e)
 	}
 
@@ -87,15 +89,24 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 		return
 	}
 
-	opt.Element.Push(&e)
+	if !alreadyPushedElement {
+		opt.Element.Push(&e)
+	}
 	return
 }
 
 // EndElement handles parsing event on the element end elements.
 func (opt *Options) EndElement(ele xml.EndElement, protoTree []interface{}) (err error) {
-	if opt.Element.Len() > 0 && opt.ComplexType.Len() == 0 {
+	if opt.Element.Len() == 0 {
+		return
+	}
+
+	if opt.ComplexType.Len() > 0 {
+		opt.Element.Pop()
+	} else {
 		opt.ProtoTree = append(opt.ProtoTree, opt.Element.Pop())
 	}
+
 	return
 }
 

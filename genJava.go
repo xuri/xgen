@@ -49,7 +49,7 @@ func (gen *CodeGenerator) GenJava() error {
 	if packageName == "" {
 		packageName = "schema"
 	}
-	var importPackage = `import java.util.ArrayList;
+	importPackage := `import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -149,7 +149,7 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
-			var required = ", required = true"
+			required := ", required = true"
 			if attribute.Optional {
 				required = ""
 			}
@@ -157,7 +157,7 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 			content += fmt.Sprintf("\t@XmlAttribute(name = \"%s\"%s)\n\tprotected %s %sAttr;\n", attribute.Name, required, fieldType, genJavaFieldName(attribute.Name, false))
 		}
 		for _, group := range v.Groups {
-			var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
 			if group.Plural {
 				fieldType = fmt.Sprintf("List<%s>", fieldType)
 			}
@@ -201,7 +201,7 @@ func (gen *CodeGenerator) JavaGroup(v *Group) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " {\n"
 		for _, element := range v.Elements {
-			var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 			if element.Plural {
 				fieldType = fmt.Sprintf("List<%s>", fieldType)
 			}
@@ -209,7 +209,7 @@ func (gen *CodeGenerator) JavaGroup(v *Group) {
 		}
 
 		for _, group := range v.Groups {
-			var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
 			if group.Plural {
 				fieldType = fmt.Sprintf("List<%s>", fieldType)
 			}
@@ -229,7 +229,7 @@ func (gen *CodeGenerator) JavaAttributeGroup(v *AttributeGroup) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " {\n"
 		for _, attribute := range v.Attributes {
-			var required = ", required = true"
+			required := ", required = true"
 			if attribute.Optional {
 				required = ""
 			}
@@ -246,7 +246,7 @@ func (gen *CodeGenerator) JavaAttributeGroup(v *AttributeGroup) {
 // JavaElement generates code for element XML schema in Java language syntax.
 func (gen *CodeGenerator) JavaElement(v *Element) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
-		var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
+		fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
 		if v.Plural {
 			fieldType = fmt.Sprintf("List<%s>", fieldType)
 		}
@@ -259,7 +259,7 @@ func (gen *CodeGenerator) JavaElement(v *Element) {
 // JavaAttribute generates code for attribute XML schema in Java language syntax.
 func (gen *CodeGenerator) JavaAttribute(v *Attribute) {
 	if _, ok := gen.StructAST[v.Name]; !ok {
-		var fieldType = genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
+		fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree))
 		if v.Plural {
 			fieldType = fmt.Sprintf("List<%s>", fieldType)
 		}
