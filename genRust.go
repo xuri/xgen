@@ -109,8 +109,7 @@ func (gen *CodeGenerator) GenRust() error {
 		return err
 	}
 	defer f.Close()
-	var extern = `
-use serde::Serialize;
+	var extern = `use serde::Serialize;
 use serde::Deserialize;
 
 use serde_xml_rs::from_reader;`
