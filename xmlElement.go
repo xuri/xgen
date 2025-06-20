@@ -48,6 +48,15 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 				e.Plural = true
 			}
 		}
+		if attr.Name.Local == "minOccurs" {
+			var minOccurs int
+			if minOccurs, err = strconv.Atoi(attr.Value); err != nil {
+				return
+			}
+			if minOccurs == 0 {
+				e.Optional = true
+			}
+		}
 	}
 
 	alreadyPushedElement := false
