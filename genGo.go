@@ -95,22 +95,22 @@ func (gen *CodeGenerator) GenGo() error {
 	return err
 }
 
+func splitter(r rune) bool {
+	return strings.ContainsRune(":.-_", r)
+}
+
 func genGoFieldName(name string, unique bool) (fieldName string) {
-	for _, str := range strings.Split(name, ":") {
+	for _, str := range strings.FieldsFunc(name, splitter) {
 		fieldName += MakeFirstUpperCase(str)
 	}
-	var tmp string
-	for _, str := range strings.Split(fieldName, ".") {
-		tmp += MakeFirstUpperCase(str)
-	}
-	fieldName = tmp
-	fieldName = strings.Replace(strings.Replace(fieldName, "-", "", -1), "_", "", -1)
+
 	if unique {
 		fieldNameCount[fieldName]++
 		if count := fieldNameCount[fieldName]; count != 1 {
 			fieldName = fmt.Sprintf("%s%d", fieldName, count)
 		}
 	}
+
 	return
 }
 
@@ -118,14 +118,16 @@ func genGoFieldType(name string) string {
 	if _, ok := goBuildinType[name]; ok {
 		return name
 	}
+
 	var fieldType string
-	for _, str := range strings.Split(name, ".") {
+	for _, str := range strings.FieldsFunc(name, splitter) {
 		fieldType += MakeFirstUpperCase(str)
 	}
-	fieldType = strings.Replace(MakeFirstUpperCase(strings.Replace(fieldType, "-", "", -1)), "_", "", -1)
+
 	if fieldType != "" {
 		return "*" + fieldType
 	}
+
 	return "interface{}"
 }
 
