@@ -110,7 +110,6 @@ func genGoFieldName(name string, unique bool) (fieldName string) {
 			fieldName = fmt.Sprintf("%s%d", fieldName, count)
 		}
 	}
-
 	return
 }
 
@@ -118,16 +117,13 @@ func genGoFieldType(name string) string {
 	if _, ok := goBuildinType[name]; ok {
 		return name
 	}
-
 	var fieldType string
 	for _, str := range strings.FieldsFunc(name, splitter) {
 		fieldType += MakeFirstUpperCase(str)
 	}
-
 	if fieldType != "" {
 		return "*" + fieldType
 	}
-
 	return "interface{}"
 }
 
