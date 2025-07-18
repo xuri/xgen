@@ -26,6 +26,7 @@
       <element name="title" type="string"/>
       <element name="blob" type="base64Binary"/>
       <element name="timestamp" type="dateTime"/>
+      <element name="metadata" type="string" minOccurs="0" />
     </sequence>
   </complexType>
 
