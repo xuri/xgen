@@ -44,7 +44,6 @@ func (gen *CodeGenerator) GenTypeScript() error {
 	source := []byte(fmt.Sprintf("%s\n%s", copyright, gen.Field))
 	f.Write(source)
 	return err
-
 }
 
 func genTypeScriptFieldName(name string, unique bool) (fieldName string) {

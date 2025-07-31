@@ -22,6 +22,11 @@ func (opt *Options) OnRestriction(ele xml.StartElement, protoTree []interface{})
 				return
 			}
 			if opt.SimpleType.Peek() != nil {
+				if opt.Element.Len() > 0 {
+					opt.Element.Peek().(*Element).Type, err = opt.GetValueType(valueType, protoTree)
+					return
+				}
+
 				opt.SimpleType.Peek().(*SimpleType).Base, err = opt.GetValueType(valueType, protoTree)
 				if err != nil {
 					return
