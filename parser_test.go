@@ -29,7 +29,7 @@ var (
 )
 
 func TestParseGo(t *testing.T) {
-	testParseForSource(t, "Go", "go", "go", testFixtureDir, false)
+	testParseForSource(t, "Go", "go", "go", testFixtureDir, true)
 }
 
 // TestParseGoExternal runs tests on any external XSDs within the externalFixtureDir

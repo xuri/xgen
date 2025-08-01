@@ -87,6 +87,34 @@ pub struct TopLevel {
 	pub my_type1: Vec<String>,
 	#[serde(rename = "myType2")]
 	pub my_type2: Vec<MyType2>,
+	#[serde(rename = "MyType11")]
+	pub my_type11: Vec<MyType11>,
 	#[serde(flatten)]
 	pub my_type6: MyType6,
+}
+
+
+// sub_level ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct sub_level {
+	#[serde(rename = "SubLevel")]
+	pub sub_level: MyType12,
+}
+
+
+// MyType12 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType12 {
+	#[serde(rename = "myType1")]
+	pub my_type1: String,
+	#[serde(rename = "myType2")]
+	pub my_type2: MyType2,
+}
+
+
+// MyType11 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType11 {
+	#[serde(rename = "SubLevel")]
+	pub sub_level: MyType12,
 }

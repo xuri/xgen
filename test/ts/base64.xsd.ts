@@ -44,4 +44,19 @@ export class TopLevel extends MyType6  {
 	Nested: MyType7;
 	MyType1: Uint8Array;
 	MyType2: Array<MyType2>;
+	MyType11: Array<MyType11>;
+}
+
+// SubLevel ...
+export type SubLevel = MyType12;
+
+// MyType12 ...
+export class MyType12 {
+	MyType1: Uint8Array;
+	MyType2: MyType2;
+}
+
+// MyType11 ...
+export class MyType11 {
+	SubLevel: MyType12;
 }

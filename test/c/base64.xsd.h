@@ -41,4 +41,18 @@ typedef struct {
 	MyType7 Nested;
 	char MyType1[];
 	MyType2 MyType2[];
+	MyType11 MyType11[];
 } TopLevel;
+
+typedef MyType12 SubLevel;
+
+// MyType12 ...
+typedef struct {
+	char MyType1[];
+	MyType2 MyType2;
+} MyType12;
+
+// MyType11 ...
+typedef struct {
+	MyType12 SubLevel;
+} MyType11;
