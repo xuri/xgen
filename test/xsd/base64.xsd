@@ -53,6 +53,24 @@
     </simpleContent>
   </complexType>
 
+  <complexType name="MyType8">
+    <sequence maxOccurs="unbounded">
+      <element name="title" type="here:myType4" />
+    </sequence>
+  </complexType>
+
+  <complexType name="MyType9">
+    <sequence maxOccurs="2">
+      <element name="title" type="here:myType4" />
+    </sequence>
+  </complexType>
+
+  <complexType name="MyType10">
+    <sequence maxOccurs="1">
+      <element name="title" type="here:myType4" />
+    </sequence>
+  </complexType>
+
   <element name="TopLevel">
     <complexType>
       <complexContent>

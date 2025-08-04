@@ -34,6 +34,21 @@ typedef struct {
 	char OriginAttr; // attr
 } MyType7;
 
+// MyType8 ...
+typedef struct {
+	MyType4 Title[];
+} MyType8;
+
+// MyType9 ...
+typedef struct {
+	MyType4 Title[];
+} MyType9;
+
+// MyType10 ...
+typedef struct {
+	MyType4 Title;
+} MyType10;
+
 // TopLevel ...
 typedef struct {
 	float CostAttr; // attr, optional

@@ -68,6 +68,24 @@ public class MyType7 {
 	protected String value;
 }
 
+// MyType8 ...
+public class MyType8 {
+	@XmlElement(required = true, name = "title")
+	protected List<MyType4> Title;
+}
+
+// MyType9 ...
+public class MyType9 {
+	@XmlElement(required = true, name = "title")
+	protected List<MyType4> Title;
+}
+
+// MyType10 ...
+public class MyType10 {
+	@XmlElement(required = true, name = "title")
+	protected MyType4 Title;
+}
+
 // TopLevel ...
 public class TopLevel extends MyType6  {
 	@XmlAttribute(name = "cost")
