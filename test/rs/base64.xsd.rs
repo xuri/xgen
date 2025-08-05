@@ -43,6 +43,8 @@ pub struct MyType4 {
 	pub blob: String,
 	#[serde(rename = "timestamp")]
 	pub timestamp: u8,
+	#[serde(rename = "metadata")]
+	pub metadata: Option<String>,
 }
 
 
