@@ -303,7 +303,9 @@ func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 
 // GoElement generates code for element XML schema in Go language syntax.
 func (gen *CodeGenerator) GoElement(v *Element) {
-	if _, ok := gen.StructAST[v.Name]; !ok {
+	// If v.Name == v.Type generating a type alias will reference itself
+	// and result in a duplicate type definition error from the go compiler
+	if _, ok := gen.StructAST[v.Name]; !ok && v.Name != v.Type {
 		var plural string
 		if v.Plural {
 			plural = "[]"

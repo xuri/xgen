@@ -1,4 +1,7 @@
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:here="http://example.org/" targetNamespace="http://example.org/">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:here="http://example.org/"
+  targetNamespace="http://example.org/">
+  <element name="MyType7" type="here:MyType7"></element>
+
   <simpleType name="myType1">
     <restriction base="base64Binary">
       <length value="10" />
@@ -8,7 +11,7 @@
   <complexType name="myType2">
     <simpleContent>
       <extension base="base64Binary">
-        <attribute name="length" type="int"/>
+        <attribute name="length" type="int" />
       </extension>
     </simpleContent>
   </complexType>
@@ -16,39 +19,39 @@
   <complexType name="myType3">
     <simpleContent>
       <extension base="date">
-        <attribute name="length" type="int"/>
+        <attribute name="length" type="int" />
       </extension>
     </simpleContent>
   </complexType>
 
   <complexType name="myType4">
     <sequence>
-      <element name="title" type="string"/>
-      <element name="blob" type="base64Binary"/>
-      <element name="timestamp" type="dateTime"/>
+      <element name="title" type="string" />
+      <element name="blob" type="base64Binary" />
+      <element name="timestamp" type="dateTime" />
     </sequence>
   </complexType>
 
   <simpleType name="myType5">
-    <restriction base="gDay"/>
+    <restriction base="gDay" />
   </simpleType>
 
   <complexType name="MyType6">
     <attribute name="code">
       <simpleType>
         <restriction base="string">
-          <enumeration value="value1"/>
-          <enumeration value="value2"/>
+          <enumeration value="value1" />
+          <enumeration value="value2" />
         </restriction>
       </simpleType>
     </attribute>
-    <attribute name="identifier" type="int"/>
+    <attribute name="identifier" type="int" />
   </complexType>
 
   <complexType name="MyType7">
     <simpleContent>
       <extension base="string">
-        <attribute type="string" name="origin" use="required"/>
+        <attribute type="string" name="origin" use="required" />
       </extension>
     </simpleContent>
   </complexType>
@@ -82,10 +85,11 @@
               <element name="myType2" type="here:myType2" />
             </choice>
           </sequence>
-          <attribute name="cost" type="double"/>
-          <attribute name="LastUpdated" type="dateTime"/>
+          <attribute name="cost" type="double" />
+          <attribute name="LastUpdated" type="dateTime" />
         </extension>
       </complexContent>
     </complexType>
   </element>
+
 </schema>
