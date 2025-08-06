@@ -98,4 +98,26 @@ public class TopLevel extends MyType6  {
 	protected List<List<Byte>> MyType1;
 	@XmlElement(required = true, name = "myType2")
 	protected List<MyType2> MyType2;
+	@XmlElement(required = true, name = "MyType11")
+	protected List<MyType11> MyType11;
+}
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlElement(required = true, name = "SubLevel")
+public class SubLevel {
+	protected MyType12 SubLevel;
+}
+
+// MyType12 ...
+public class MyType12 {
+	@XmlElement(required = true, name = "myType1")
+	protected List<Byte> MyType1;
+	@XmlElement(required = true, name = "myType2")
+	protected MyType2 MyType2;
+}
+
+// MyType11 ...
+public class MyType11 {
+	@XmlElement(required = true, name = "SubLevel")
+	protected MyType12 SubLevel;
 }

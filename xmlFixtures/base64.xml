@@ -4,4 +4,10 @@
     <myType1>dGVzdDI=</myType1>
     <myType2 length="2">te</myType2>
     <myType2 length="4">test</myType2>
+    <MyType11>
+        <SubLevel>
+            <myType1>dGVzdA==</myType1>
+            <myType2 length="2">te</myType2>
+        </SubLevel>
+    </MyType11>
 </TopLevel>
