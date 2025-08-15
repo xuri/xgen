@@ -18,6 +18,7 @@ typedef struct {
 	char Title;
 	char Blob[];
 	char Timestamp;
+	char Metadata;
 } MyType4;
 
 // MyType5 ...
