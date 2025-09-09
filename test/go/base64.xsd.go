@@ -67,7 +67,7 @@ type TopLevel struct {
 	CostAttr        *float64   `xml:"cost,attr,omitempty"`
 	LastUpdatedAttr string     `xml:"LastUpdated,attr"`
 	Nested          *MyType7   `xml:"nested,omitempty"`
-	MyType1         []string   `xml:"myType1"`
-	MyType2         []*MyType2 `xml:"myType2"`
+	MyType1         []string   `xml:"myType1,omitempty"`
+	MyType2         []*MyType2 `xml:"myType2,omitempty"`
 	*MyType6
 }
