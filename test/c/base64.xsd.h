@@ -18,6 +18,7 @@ typedef struct {
 	char Title;
 	char Blob[];
 	char Timestamp;
+	char Metadata;
 } MyType4;
 
 // MyType5 ...
@@ -52,7 +53,7 @@ typedef struct {
 // TopLevel ...
 typedef struct {
 	float CostAttr; // attr, optional
-	char LastUpdatedAttr; // attr, optional
+	char LastUpdatedAttr; // attr
 	MyType7 Nested;
 	char MyType1[];
 	MyType2 MyType2[];

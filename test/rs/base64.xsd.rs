@@ -43,6 +43,8 @@ pub struct MyType4 {
 	pub blob: String,
 	#[serde(rename = "timestamp")]
 	pub timestamp: u8,
+	#[serde(rename = "metadata")]
+	pub metadata: Option<String>,
 }
 
 
@@ -104,7 +106,7 @@ pub struct TopLevel {
 	#[serde(rename = "cost")]
 	pub cost: Option<f64>,
 	#[serde(rename = "LastUpdated")]
-	pub last_updated: Option<u8>,
+	pub last_updated: u8,
 	#[serde(rename = "nested")]
 	pub nested: Option<MyType7>,
 	#[serde(rename = "myType1")]

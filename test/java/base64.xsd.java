@@ -43,6 +43,8 @@ public class MyType4 {
 	protected List<Byte> Blob;
 	@XmlElement(required = true, name = "timestamp")
 	protected String Timestamp;
+	@XmlElement(required = true, name = "metadata")
+	protected String Metadata;
 }
 
 // MyType5 ...
@@ -90,7 +92,7 @@ public class MyType10 {
 public class TopLevel extends MyType6  {
 	@XmlAttribute(name = "cost")
 	protected Float CostAttr;
-	@XmlAttribute(name = "LastUpdated")
+	@XmlAttribute(name = "LastUpdated", required = true)
 	protected String LastUpdatedAttr;
 	@XmlElement(required = true, name = "nested")
 	protected MyType7 Nested;
