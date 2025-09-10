@@ -143,6 +143,7 @@ func (gen *CodeGenerator) TypeScriptSimpleType(v *SimpleType) {
 // TypeScriptComplexType generates code for complex type XML schema in TypeScript language
 // syntax.
 func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
+	fmt.Printf("jjp: TypeScriptComplexType = %+v\n", v)
 	if _, ok := gen.StructAST[v.Name]; !ok {
 		content := " {\n"
 		for _, attrGroup := range v.AttributeGroup {
@@ -164,7 +165,12 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 
 		for _, element := range v.Elements {
 			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree), element.Plural)
-			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(element.Name, false), fieldType)
+			fieldName := genTypeScriptFieldName(element.Name, false)
+			fmt.Printf("jjp: element = %+v\n", element)
+			if element.Optional {
+				fieldName += `?`
+			}
+			content += fmt.Sprintf("\t%s: %s;\n", fieldName, fieldType)
 		}
 
 		if len(v.Base) > 0 && isBuiltInTypeScriptType(v.Base) {
