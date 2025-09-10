@@ -57,7 +57,7 @@ export class MyType10 {
 export class TopLevel extends MyType6  {
 	CostAttr: number | null;
 	LastUpdatedAttr: string | null;
-	Nested: MyType7;
+	Nested?: MyType7;
 	MyType1: Uint8Array;
 	MyType2: Array<MyType2>;
 }
