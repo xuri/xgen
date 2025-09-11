@@ -29,7 +29,7 @@ type MyType4 struct {
 	Title     string   `xml:"title"`
 	Blob      string   `xml:"blob"`
 	Timestamp string   `xml:"timestamp"`
-	Metadata  *string  `xml:"metadata,omitempty"`
+	Metadata  *string  `xml:"metadata"`
 }
 
 // MyType5 ...
