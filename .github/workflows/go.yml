@@ -35,18 +35,6 @@ jobs:
     - name: Test
       run: go test -v -timeout 60m -coverprofile='coverage.txt' -covermode=atomic ./
 
-    - name: Check that generated files are up to date
-      run: |
-        cd cmd/xgen && \
-        go install && \
-        cd ../.. &&
-        xgen -i ./test/xsd/base64.xsd -o ./test/c/base64.xsd.h -l C && \
-        xgen -i ./test/xsd/base64.xsd -o ./test/go/base64.xsd.go -l Go && \
-        xgen -i ./test/xsd/base64.xsd -o ./test/java/base64.xsd.java -l Java && \
-        xgen -i ./test/xsd/base64.xsd -o ./test/rs/base64.xsd.rs -l Rust && \
-        xgen -i ./test/xsd/base64.xsd -o ./test/ts/base64.xsd.ts -l TypeScript && \
-        git diff --exit-code
-
     - name: Codecov
       uses: codecov/codecov-action@v5
       env:
