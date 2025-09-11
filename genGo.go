@@ -219,9 +219,10 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			var optional string
 			if element.Optional {
-				optional = `,omitempty`
 				if !element.Plural && !strings.HasPrefix(fieldType, `*`) {
 					fieldType = "*" + fieldType
+				} else {
+					optional = `,omitempty`
 				}
 			}
 			if fieldType == "time.Time" {
