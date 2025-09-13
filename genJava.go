@@ -169,7 +169,11 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 			if element.Plural {
 				fieldType = fmt.Sprintf("List<%s>", fieldType)
 			}
-			content += fmt.Sprintf("\t@XmlElement(required = true, name = \"%s\")\n\tprotected %s %s;\n", element.Name, fieldType, genJavaFieldName(element.Name, false))
+			required := `required = true, `
+			if element.Optional {
+				required = ""
+			}
+			content += fmt.Sprintf("\t@XmlElement(%sname = \"%s\")\n\tprotected %s %s;\n", required, element.Name, fieldType, genJavaFieldName(element.Name, false))
 		}
 
 		if len(v.Base) > 0 && isBuiltInJavaType(v.Base) {
