@@ -20,7 +20,7 @@ export class MyType4 {
 	Title: string;
 	Blob: Uint8Array;
 	Timestamp: string;
-	Metadata: string;
+	Metadata?: string;
 }
 
 // MyType5 ...
@@ -55,9 +55,9 @@ export class MyType10 {
 
 // TopLevel ...
 export class TopLevel extends MyType6  {
-	CostAttr?: number;
-	LastUpdatedAttr: string;
-	Nested: MyType7;
+    CostAttr?: number;
+    LastUpdatedAttr: string;
+    Nested?: MyType7;
 	MyType1: Uint8Array;
 	MyType2: Array<MyType2>;
 }
