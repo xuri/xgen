@@ -193,25 +193,26 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
+			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 			var optional string
 			if attribute.Optional {
-				optional = `,omitempty`
+				if !strings.HasPrefix(fieldType, `*`) {
+					fieldType = "*" + fieldType
+				} else {
+					optional = `,omitempty`
+				}
 			}
-			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 			if fieldType == "time.Time" {
 				gen.ImportTime = true
-			}
-			if attribute.Optional && !strings.HasPrefix(fieldType, `*`) {
-				fieldType = "*" + fieldType
 			}
 			content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFieldName(attribute.Name, false), fieldType, attribute.Name, optional)
 		}
 		for _, group := range v.Groups {
-			var plural string
+			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
 			if group.Plural {
-				plural = "[]"
+				fieldType = "[]" + fieldType
 			}
-			content += fmt.Sprintf("\t%s\t%s%s\n", genGoFieldName(group.Name, false), plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+			content += fmt.Sprintf("\t%s\t%s\n", genGoFieldName(group.Name, false), fieldType)
 		}
 
 		for _, element := range v.Elements {

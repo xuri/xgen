@@ -151,12 +151,15 @@ func (gen *CodeGenerator) TypeScriptComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
-			var optional string
+			fieldType := genTypeScriptFieldType(
+				getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree),
+				attribute.Plural,
+			)
+			fieldName := genTypeScriptFieldName(attribute.Name, false) + "Attr"
 			if attribute.Optional {
-				optional = ` | null`
+				fieldName += "?"
 			}
-			fieldType := genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree), attribute.Plural)
-			content += fmt.Sprintf("\t%sAttr: %s%s;\n", genTypeScriptFieldName(attribute.Name, false), fieldType, optional)
+			content += fmt.Sprintf("\t%s: %s;\n", fieldName, fieldType)
 		}
 		for _, group := range v.Groups {
 			content += fmt.Sprintf("\t%s: %s;\n", genTypeScriptFieldName(group.Name, false), genTypeScriptFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree), group.Plural))
