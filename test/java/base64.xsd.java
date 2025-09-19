@@ -43,7 +43,7 @@ public class MyType4 {
 	protected List<Byte> Blob;
 	@XmlElement(required = true, name = "timestamp")
 	protected String Timestamp;
-	@XmlElement(required = true, name = "metadata")
+	@XmlElement(name = "metadata")
 	protected String Metadata;
 }
 
