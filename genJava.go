@@ -149,12 +149,12 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
-			required := ", required = true"
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+			required := `required = true, `
 			if attribute.Optional {
 				required = ""
 			}
-			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
-			content += fmt.Sprintf("\t@XmlAttribute(name = \"%s\"%s)\n\tprotected %s %sAttr;\n", attribute.Name, required, fieldType, genJavaFieldName(attribute.Name, false))
+			content += fmt.Sprintf("\t@XmlAttribute(%sname = \"%s\")\n\tprotected %s %sAttr;\n", required, attribute.Name, fieldType, genJavaFieldName(attribute.Name, false))
 		}
 		for _, group := range v.Groups {
 			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))

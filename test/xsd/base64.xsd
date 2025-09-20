@@ -84,7 +84,7 @@
             </choice>
           </sequence>
           <attribute name="cost" type="double"/>
-          <attribute name="LastUpdated" type="dateTime"/>
+          <attribute name="LastUpdated" type="dateTime" use="required"/>
         </extension>
       </complexContent>
     </complexType>
