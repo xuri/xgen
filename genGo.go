@@ -193,44 +193,46 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
+			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 			var optional string
 			if attribute.Optional {
-				optional = `,omitempty`
+				if !strings.HasPrefix(fieldType, `*`) {
+					fieldType = "*" + fieldType
+				} else {
+					optional = `,omitempty`
+				}
 			}
-			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 			if fieldType == "time.Time" {
 				gen.ImportTime = true
-			}
-			if attribute.Optional && !strings.HasPrefix(fieldType, `*`) {
-				fieldType = "*" + fieldType
 			}
 			content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFieldName(attribute.Name, false), fieldType, attribute.Name, optional)
 		}
 		for _, group := range v.Groups {
-			var plural string
+			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
 			if group.Plural {
-				plural = "[]"
+				fieldType = "[]" + fieldType
 			}
-			content += fmt.Sprintf("\t%s\t%s%s\n", genGoFieldName(group.Name, false), plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree)))
+			content += fmt.Sprintf("\t%s\t%s\n", genGoFieldName(group.Name, false), fieldType)
 		}
 
 		for _, element := range v.Elements {
-			var plural string
+			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+
 			if element.Plural {
-				plural = "[]"
+				fieldType = "[]" + fieldType
 			}
 			var optional string
 			if element.Optional {
-				optional = `,omitempty`
+				if !element.Plural && !strings.HasPrefix(fieldType, `*`) {
+					fieldType = "*" + fieldType
+				} else {
+					optional = `,omitempty`
+				}
 			}
-			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 			if fieldType == "time.Time" {
 				gen.ImportTime = true
 			}
-			if element.Optional && !element.Plural && !strings.HasPrefix(fieldType, `*`) {
-				fieldType = "*" + fieldType
-			}
-			content += fmt.Sprintf("\t%s\t%s%s\t`xml:\"%s%s\"`\n", genGoFieldName(element.Name, false), plural, fieldType, element.Name, optional)
+			content += fmt.Sprintf("\t%s\t%s\t`xml:\"%s%s\"`\n", genGoFieldName(element.Name, false), fieldType, element.Name, optional)
 		}
 		if len(v.Base) > 0 {
 			// If the type is a built-in type, generate a Value field as chardata.

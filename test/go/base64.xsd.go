@@ -12,14 +12,14 @@ type MyType1 string
 // MyType2 ...
 type MyType2 struct {
 	XMLName    xml.Name `xml:"myType2"`
-	LengthAttr *int     `xml:"length,attr,omitempty"`
+	LengthAttr *int     `xml:"length,attr"`
 	Value      string   `xml:",chardata"`
 }
 
 // MyType3 ...
 type MyType3 struct {
 	XMLName    xml.Name `xml:"myType3"`
-	LengthAttr *int     `xml:"length,attr,omitempty"`
+	LengthAttr *int     `xml:"length,attr"`
 	Value      string   `xml:",chardata"`
 }
 
@@ -29,7 +29,7 @@ type MyType4 struct {
 	Title     string   `xml:"title"`
 	Blob      string   `xml:"blob"`
 	Timestamp string   `xml:"timestamp"`
-	Metadata  *string  `xml:"metadata,omitempty"`
+	Metadata  *string  `xml:"metadata"`
 }
 
 // MyType5 ...
@@ -37,8 +37,8 @@ type MyType5 string
 
 // MyType6 ...
 type MyType6 struct {
-	CodeAttr       *string `xml:"code,attr,omitempty"`
-	IdentifierAttr *int    `xml:"identifier,attr,omitempty"`
+	CodeAttr       *string `xml:"code,attr"`
+	IdentifierAttr *int    `xml:"identifier,attr"`
 }
 
 // MyType7 ...
@@ -64,7 +64,7 @@ type MyType10 struct {
 
 // TopLevel ...
 type TopLevel struct {
-	CostAttr        *float64   `xml:"cost,attr,omitempty"`
+	CostAttr        *float64   `xml:"cost,attr"`
 	LastUpdatedAttr string     `xml:"LastUpdated,attr"`
 	Nested          *MyType7   `xml:"nested,omitempty"`
 	MyType1         []string   `xml:"myType1,omitempty"`

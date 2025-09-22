@@ -149,12 +149,12 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
-			required := ", required = true"
+			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+			required := `required = true, `
 			if attribute.Optional {
 				required = ""
 			}
-			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
-			content += fmt.Sprintf("\t@XmlAttribute(name = \"%s\"%s)\n\tprotected %s %sAttr;\n", attribute.Name, required, fieldType, genJavaFieldName(attribute.Name, false))
+			content += fmt.Sprintf("\t@XmlAttribute(%sname = \"%s\")\n\tprotected %s %sAttr;\n", required, attribute.Name, fieldType, genJavaFieldName(attribute.Name, false))
 		}
 		for _, group := range v.Groups {
 			fieldType := genJavaFieldType(getBasefromSimpleType(trimNSPrefix(group.Ref), gen.ProtoTree))
@@ -169,7 +169,11 @@ func (gen *CodeGenerator) JavaComplexType(v *ComplexType) {
 			if element.Plural {
 				fieldType = fmt.Sprintf("List<%s>", fieldType)
 			}
-			content += fmt.Sprintf("\t@XmlElement(required = true, name = \"%s\")\n\tprotected %s %s;\n", element.Name, fieldType, genJavaFieldName(element.Name, false))
+			required := `required = true, `
+			if element.Optional {
+				required = ""
+			}
+			content += fmt.Sprintf("\t@XmlElement(%sname = \"%s\")\n\tprotected %s %s;\n", required, element.Name, fieldType, genJavaFieldName(element.Name, false))
 		}
 
 		if len(v.Base) > 0 && isBuiltInJavaType(v.Base) {
