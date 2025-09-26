@@ -50,6 +50,13 @@ typedef struct {
 	MyType4 Title;
 } MyType10;
 
+// MyType11 ...
+typedef struct {
+	int Option1;
+	char Option2;
+	MyType10 Option3;
+} MyType11;
+
 // TopLevel ...
 typedef struct {
 	float CostAttr; // attr, optional

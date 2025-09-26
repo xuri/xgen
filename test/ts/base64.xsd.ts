@@ -53,11 +53,18 @@ export class MyType10 {
 	Title: MyType4;
 }
 
+// MyType11 ...
+export class MyType11 {
+	Option1?: number;
+	Option2?: string;
+	Option3?: MyType10;
+}
+
 // TopLevel ...
 export class TopLevel extends MyType6  {
 	CostAttr?: number;
 	LastUpdatedAttr: string;
 	Nested?: MyType7;
-	MyType1: Uint8Array;
-	MyType2: Array<MyType2>;
+	MyType1?: Uint8Array;
+	MyType2?: Array<MyType2>;
 }

@@ -62,11 +62,18 @@ type MyType10 struct {
 	Title *MyType4 `xml:"title"`
 }
 
+// MyType11 ...
+type MyType11 struct {
+	Option1 *int      `xml:"option1"`
+	Option2 *string   `xml:"option2"`
+	Option3 *MyType10 `xml:"option3"`
+}
+
 // TopLevel ...
 type TopLevel struct {
 	CostAttr        *float64   `xml:"cost,attr"`
 	LastUpdatedAttr string     `xml:"LastUpdated,attr"`
-	Nested          *MyType7   `xml:"nested,omitempty"`
+	Nested          *MyType7   `xml:"nested"`
 	MyType1         []string   `xml:"myType1"`
 	MyType2         []*MyType2 `xml:"myType2"`
 	*MyType6

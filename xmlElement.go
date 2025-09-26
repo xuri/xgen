@@ -74,6 +74,7 @@ func (opt *Options) OnElement(ele xml.StartElement, protoTree []interface{}) (er
 	}
 
 	if opt.Choice.Len() > 0 {
+		e.Optional = true
 		e.Plural = e.Plural || opt.Choice.Peek().(*Choice).Plural
 	}
 

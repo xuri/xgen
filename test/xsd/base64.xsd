@@ -72,6 +72,14 @@
     </sequence>
   </complexType>
 
+  <complexType name="MyType11">
+    <choice>
+      <element name="option1" type="int" />
+      <element name="option2" type="string" />
+      <element name="option3" type="here:MyType10" />
+    </choice>
+  </complexType>
+
   <element name="TopLevel">
     <complexType>
       <complexContent>

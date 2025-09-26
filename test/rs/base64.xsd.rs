@@ -100,6 +100,18 @@ pub struct MyType10 {
 }
 
 
+// MyType11 ...
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+pub struct MyType11 {
+	#[serde(rename = "option1")]
+	pub option1: Option<i32>,
+	#[serde(rename = "option2")]
+	pub option2: Option<String>,
+	#[serde(rename = "option3")]
+	pub option3: Option<MyType10>,
+}
+
+
 // TopLevel ...
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct TopLevel {

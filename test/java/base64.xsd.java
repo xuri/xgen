@@ -88,6 +88,16 @@ public class MyType10 {
 	protected MyType4 Title;
 }
 
+// MyType11 ...
+public class MyType11 {
+	@XmlElement(name = "option1")
+	protected Integer Option1;
+	@XmlElement(name = "option2")
+	protected String Option2;
+	@XmlElement(name = "option3")
+	protected MyType10 Option3;
+}
+
 // TopLevel ...
 public class TopLevel extends MyType6  {
 	@XmlAttribute(name = "cost")
@@ -96,8 +106,8 @@ public class TopLevel extends MyType6  {
 	protected String LastUpdatedAttr;
 	@XmlElement(name = "nested")
 	protected MyType7 Nested;
-	@XmlElement(required = true, name = "myType1")
+	@XmlElement(name = "myType1")
 	protected List<List<Byte>> MyType1;
-	@XmlElement(required = true, name = "myType2")
+	@XmlElement(name = "myType2")
 	protected List<MyType2> MyType2;
 }
