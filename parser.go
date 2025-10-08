@@ -19,6 +19,14 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
+type Hook interface {
+	ShouldOverride() bool
+	OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (err error)
+	OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (err error)
+	OnCharData(opt *Options, ele string, protoTree []interface{}) (err error)
+	OnGenerate(gen *CodeGenerator, v interface{})
+}
+
 // Options holds user-defined overrides and runtime data that are used when
 // parsing from an XSD document.
 type Options struct {
@@ -26,6 +34,7 @@ type Options struct {
 	FileDir             string
 	InputDir            string
 	OutputDir           string
+	Compact             bool
 	Extract             bool
 	Lang                string
 	Package             string
@@ -36,6 +45,7 @@ type Options struct {
 	ParseFileMap        map[string][]interface{}
 	ProtoTree           []interface{}
 	RemoteSchema        map[string][]byte
+	Hooks               map[string]Hook
 
 	InElement        string
 	CurrentEle       string
@@ -108,25 +118,48 @@ func (opt *Options) Parse() (err error) {
 
 		switch element := token.(type) {
 		case xml.StartElement:
+			if hook, ok := opt.Hooks[element.Name.Local]; ok {
+				if err = hook.OnStartElement(opt, element, opt.ProtoTree); err != nil {
+					return
+				}
+				if hook.ShouldOverride() {
+					continue
+				}
+			}
 
 			opt.InElement = element.Name.Local
 			funcName := fmt.Sprintf("On%s", MakeFirstUpperCase(opt.InElement))
 			if err = callFuncByName(opt, funcName, []reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)}); err != nil {
 				return
 			}
-
 		case xml.EndElement:
+			if hook, ok := opt.Hooks[element.Name.Local]; ok {
+				if err = hook.OnEndElement(opt, element, opt.ProtoTree); err != nil {
+					return
+				}
+				if hook.ShouldOverride() {
+					continue
+				}
+			}
+
 			funcName := fmt.Sprintf("End%s", MakeFirstUpperCase(element.Name.Local))
 			if err = callFuncByName(opt, funcName, []reflect.Value{reflect.ValueOf(element), reflect.ValueOf(opt.ProtoTree)}); err != nil {
 				return
 			}
 		case xml.CharData:
+			if hook, ok := opt.Hooks[opt.InElement]; ok {
+				if err = hook.OnCharData(opt, string(element), opt.ProtoTree); err != nil {
+					return
+				}
+				if hook.ShouldOverride() {
+					continue
+				}
+			}
 			if err = opt.OnCharData(string(element), opt.ProtoTree); err != nil {
 				return
 			}
 		default:
 		}
-
 	}
 
 	if !opt.Extract {
@@ -138,11 +171,13 @@ func (opt *Options) Parse() (err error) {
 			os.Exit(1)
 		}
 		generator := &CodeGenerator{
+			Compact:   opt.Compact,
 			Lang:      opt.Lang,
 			Package:   opt.Package,
 			File:      path,
 			ProtoTree: opt.ProtoTree,
 			StructAST: map[string]string{},
+			Hooks:     opt.Hooks,
 		}
 		funcName := fmt.Sprintf("Gen%s", MakeFirstUpperCase(opt.Lang))
 		if err = callFuncByName(generator, funcName, []reflect.Value{}); err != nil {

@@ -9,6 +9,7 @@
 package xgen
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -29,12 +30,12 @@ var (
 )
 
 func TestParseGo(t *testing.T) {
-	testParseForSource(t, "Go", "go", "go", testFixtureDir, false)
+	testParseForSource(t, "Go", "go", "go", testFixtureDir, false, nil)
 }
 
 // TestParseGoExternal runs tests on any external XSDs within the externalFixtureDir
 func TestParseGoExternal(t *testing.T) {
-	testParseForSource(t, "Go", "go", "go", externalFixtureDir, true)
+	testParseForSource(t, "Go", "go", "go", externalFixtureDir, true, nil)
 }
 
 // testParseForSource runs parsing tests for a given language. The sourceDirectory specifies the root of the
@@ -46,7 +47,7 @@ func TestParseGoExternal(t *testing.T) {
 //
 // The test cleans up files it generates unless leaveOutput is set to true. In which case, the generate file is left
 // on disk for manual inspection under <sourceDirectory>/<langDirName>/output.
-func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool) {
+func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool, hooks map[string]Hook) {
 	codeDir := filepath.Join(sourceDirectory, langDirName)
 
 	outputDir := filepath.Join(codeDir, "output")
@@ -86,6 +87,7 @@ func testParseForSource(t *testing.T, lang string, fileExt string, langDirName s
 					ParseFileList:       make(map[string]bool),
 					ParseFileMap:        make(map[string][]interface{}),
 					ProtoTree:           make([]interface{}, 0),
+					Hooks:               hooks,
 				})
 				err = parser.Parse()
 				assert.NoError(t, err, file)
@@ -106,33 +108,123 @@ func testParseForSource(t *testing.T, lang string, fileExt string, langDirName s
 }
 
 func TestParseTypeScript(t *testing.T) {
-	testParseForSource(t, "TypeScript", "ts", "ts", testFixtureDir, false)
+	testParseForSource(t, "TypeScript", "ts", "ts", testFixtureDir, false, nil)
 }
 
 func TestParseTypeScriptExternal(t *testing.T) {
-	testParseForSource(t, "TypeScript", "ts", "ts", externalFixtureDir, true)
+	testParseForSource(t, "TypeScript", "ts", "ts", externalFixtureDir, true, nil)
 }
 
 func TestParseC(t *testing.T) {
-	testParseForSource(t, "C", "h", "c", testFixtureDir, false)
+	testParseForSource(t, "C", "h", "c", testFixtureDir, false, nil)
 }
 
 func TestParseCExternal(t *testing.T) {
-	testParseForSource(t, "C", "h", "c", externalFixtureDir, true)
+	testParseForSource(t, "C", "h", "c", externalFixtureDir, true, nil)
 }
 
 func TestParseJava(t *testing.T) {
-	testParseForSource(t, "Java", "java", "java", testFixtureDir, false)
+	testParseForSource(t, "Java", "java", "java", testFixtureDir, false, nil)
 }
 
 func TestParseJavaExternal(t *testing.T) {
-	testParseForSource(t, "Java", "java", "java", externalFixtureDir, true)
+	testParseForSource(t, "Java", "java", "java", externalFixtureDir, true, nil)
 }
 
 func TestParseRust(t *testing.T) {
-	testParseForSource(t, "Rust", "rs", "rs", testFixtureDir, false)
+	testParseForSource(t, "Rust", "rs", "rs", testFixtureDir, false, nil)
 }
 
 func TestParseRustExternal(t *testing.T) {
-	testParseForSource(t, "Rust", "rs", "rs", externalFixtureDir, true)
+	testParseForSource(t, "Rust", "rs", "rs", externalFixtureDir, true, nil)
+}
+
+type Appinfo struct {
+	Doc    string
+	Parent string
+}
+
+type AppinfoHook struct {
+	Override          bool
+	OnStartElementRan bool
+	OnEndElementRan   bool
+	OnCharDataRan     bool
+	OnGenerateRan     bool
+
+	Appinfo *Stack
+}
+
+func (h *AppinfoHook) ShouldOverride() bool {
+	return h.Override
+}
+
+func (h *AppinfoHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (err error) {
+	h.OnStartElementRan = true
+
+	a := &Appinfo{}
+
+	a.Parent = opt.CurrentEle
+
+	if opt.InElement != "" && opt.Element.Peek() != nil {
+		a.Parent = opt.Element.Peek().(*Element).Name
+	}
+
+	switch opt.CurrentEle {
+	case "simpleType":
+		if opt.SimpleType.Peek() != nil {
+			a.Parent = opt.SimpleType.Peek().(*SimpleType).Name
+		}
+	case "complexType":
+		if opt.ComplexType.Peek() != nil {
+			a.Parent = opt.ComplexType.Peek().(*ComplexType).Name
+		}
+	case "element":
+		if opt.Element.Peek() != nil {
+			a.Parent = opt.Element.Peek().(*Element).Name
+		}
+	}
+
+	h.Appinfo.Push(a)
+
+	return nil
+}
+
+func (h *AppinfoHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (err error) {
+	h.OnEndElementRan = true
+
+	opt.ProtoTree = append(opt.ProtoTree, h.Appinfo.Pop())
+
+	return nil
+}
+
+func (h *AppinfoHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (err error) {
+	if h.Appinfo.Peek() != nil {
+		h.OnCharDataRan = true
+		h.Appinfo.Peek().(*Appinfo).Doc = ele
+	}
+	return nil
+}
+
+func (h *AppinfoHook) OnGenerate(gen *CodeGenerator, v interface{}) {
+	a, ok := v.(*Appinfo)
+	if !ok {
+		return
+	}
+	h.OnGenerateRan = a != nil
+
+	// output
+	// gen.Field += fmt.Sprintf("// %s %s\n", a.Parent, a.Doc)
+}
+
+func TestParseGoWithAppinfoHook(t *testing.T) {
+	appinfoHook := &AppinfoHook{}
+	appinfoHook.Appinfo = NewStack()
+	hooks := map[string]Hook{
+		"appinfo": appinfoHook,
+	}
+	testParseForSource(t, "Go", "go", "go", testFixtureDir, false, hooks)
+	assert.True(t, appinfoHook.OnStartElementRan)
+	assert.True(t, appinfoHook.OnEndElementRan)
+	assert.True(t, appinfoHook.OnGenerateRan)
+	assert.True(t, appinfoHook.OnCharDataRan)
 }

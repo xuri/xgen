@@ -183,6 +183,10 @@ func trimNSPrefix(str string) (name string) {
 	return
 }
 
+func MakeFirstLowerCase(s string) string {
+	return strings.ToLower(s[:1]) + s[1:]
+}
+
 // MakeFirstUpperCase make the first letter of a string uppercase.
 func MakeFirstUpperCase(s string) string {
 	return ToTitle(s)

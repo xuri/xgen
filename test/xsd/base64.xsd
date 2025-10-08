@@ -6,6 +6,9 @@
   </simpleType>
 
   <complexType name="myType2">
+    <annotation>
+      <appinfo>appinfo-myType2-appinfo</appinfo>
+    </annotation>
     <simpleContent>
       <extension base="base64Binary">
         <attribute name="length" type="int"/>

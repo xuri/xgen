@@ -3,7 +3,7 @@
 // MyType1 ...
 export type MyType1 = Uint8Array;
 
-// MyType2 ...
+// MyType2 is appinfo-myType2-appinfo
 export class MyType2 {
 	LengthAttr?: number;
 	Value: Uint8Array;
