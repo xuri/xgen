@@ -19,14 +19,6 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type Hook interface {
-	ShouldOverride() bool
-	OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (err error)
-	OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (err error)
-	OnCharData(opt *Options, ele string, protoTree []interface{}) (err error)
-	OnGenerate(gen *CodeGenerator, v interface{})
-}
-
 // Options holds user-defined overrides and runtime data that are used when
 // parsing from an XSD document.
 type Options struct {
