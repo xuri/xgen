@@ -28,7 +28,6 @@ type CodeGenerator struct {
 	ImportEncodingXML bool // For Go language
 	ProtoTree         []interface{}
 	StructAST         map[string]string
-	FieldIndex        int32
 	Hooks             map[string]Hook
 }
 
@@ -161,12 +160,7 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 			fieldName := genGoFieldName(v.Name, true)
 			if fieldName != v.Name {
 				gen.ImportEncodingXML = true
-				xmlName := v.Name
-				if gen.Compact {
-					xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-					gen.FieldIndex++
-				}
-				content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", xmlName)
+				content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 			}
 			for _, member := range toSortedPairs(v.MemberTypes) {
 				memberName := member.key
@@ -199,12 +193,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		fieldName := genGoFieldName(v.Name, true)
 		if fieldName != v.Name {
 			gen.ImportEncodingXML = true
-			xmlName := v.Name
-			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
-			}
-			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", xmlName)
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}
 		for _, attrGroup := range v.AttributeGroup {
 			fieldType := getBasefromSimpleType(trimNSPrefix(attrGroup.Ref), gen.ProtoTree)
@@ -214,7 +203,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			content += fmt.Sprintf("\t%s\t%s\n", genGoFieldName(attrGroup.Name, false), genGoFieldType(fieldType))
 		}
 
-		for _, attribute := range v.Attributes {
+		for i, attribute := range v.Attributes {
 			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
 			var optional string
 			if attribute.Optional {
@@ -229,8 +218,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			xmlName := attribute.Name
 			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
+				xmlName = fmt.Sprintf("%c%d", xmlName[0], i)
 			}
 			content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFieldName(attribute.Name, false), fieldType, xmlName, optional)
 		}
@@ -242,7 +230,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			content += fmt.Sprintf("\t%s\t%s\n", genGoFieldName(group.Name, false), fieldType)
 		}
 
-		for _, element := range v.Elements {
+		for i, element := range v.Elements {
 			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
 
 			if element.Plural {
@@ -259,8 +247,7 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 			}
 			xmlName := element.Name
 			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
+				xmlName = fmt.Sprintf("%c%d", xmlName[0], i)
 			}
 			content += fmt.Sprintf("\t%s\t%s\t`xml:\"%s%s\"`\n", genGoFieldName(element.Name, false), fieldType, xmlName, optional)
 		}
@@ -292,12 +279,7 @@ func (gen *CodeGenerator) GoGroup(v *Group) {
 		fieldName := genGoFieldName(v.Name, true)
 		if fieldName != v.Name {
 			gen.ImportEncodingXML = true
-			xmlName := v.Name
-			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
-			}
-			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", xmlName)
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}
 		for _, element := range v.Elements {
 			var plural string
@@ -329,22 +311,16 @@ func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 		fieldName := genGoFieldName(v.Name, true)
 		if fieldName != v.Name {
 			gen.ImportEncodingXML = true
-			xmlName := v.Name
-			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
-			}
-			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", xmlName)
+			content += fmt.Sprintf("\tXMLName\txml.Name\t`xml:\"%s\"`\n", v.Name)
 		}
-		for _, attribute := range v.Attributes {
+		for i, attribute := range v.Attributes {
 			var optional string
 			if attribute.Optional {
 				optional = `,omitempty`
 			}
 			xmlName := attribute.Name
 			if gen.Compact {
-				xmlName = fmt.Sprintf("%c%d", xmlName[0], gen.FieldIndex)
-				gen.FieldIndex++
+				xmlName = fmt.Sprintf("%c%d", xmlName[0], i)
 			}
 			content += fmt.Sprintf("\t%sAttr\t%s\t`xml:\"%s,attr%s\"`\n", genGoFieldName(attribute.Name, false), genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree)), xmlName, optional)
 		}
