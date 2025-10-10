@@ -218,6 +218,8 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 				ParseFileList:       opt.ParseFileList,
 				ParseFileMap:        opt.ParseFileMap,
 				ProtoTree:           make([]interface{}, 0),
+				Compact:             opt.Compact,
+				Hooks:               opt.Hooks,
 			})
 			if parser.Parse() != nil {
 				return
@@ -245,6 +247,8 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			ParseFileList:       opt.ParseFileList,
 			ParseFileMap:        opt.ParseFileMap,
 			ProtoTree:           make([]interface{}, 0),
+			Compact:             opt.Compact,
+			Hooks:               opt.Hooks,
 		})
 		if parser.Parse() != nil {
 			return
@@ -266,6 +270,8 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		ParseFileList:       opt.ParseFileList,
 		ParseFileMap:        opt.ParseFileMap,
 		ProtoTree:           make([]interface{}, 0),
+		Compact:             opt.Compact,
+		Hooks:               opt.Hooks,
 	})
 	if parser.Parse() != nil {
 		return

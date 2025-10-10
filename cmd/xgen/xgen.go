@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/xuri/xgen"
+	"github.com/raduionita-wk/xgen"
 )
 
 // Config holds user-defined overrides and filters that are used when
@@ -124,6 +124,7 @@ func main() {
 			ParseFileMap:        make(map[string][]interface{}),
 			ProtoTree:           make([]interface{}, 0),
 			RemoteSchema:        make(map[string][]byte),
+			Hooks:               make(map[string]xgen.Hook),
 		}).Parse(); err != nil {
 			fmt.Printf("process error on %s: %s\r\n", file, err.Error())
 			os.Exit(1)
