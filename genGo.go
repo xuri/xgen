@@ -28,7 +28,7 @@ type CodeGenerator struct {
 	ImportEncodingXML bool // For Go language
 	ProtoTree         []interface{}
 	StructAST         map[string]string
-	Hooks             map[string]Hook
+	Hooks             []Hook
 }
 
 var goBuildinType = map[string]bool{
@@ -61,18 +61,30 @@ var goBuildinType = map[string]bool{
 // GenGo generate Go programming language source code for XML schema
 // definition files.
 func (gen *CodeGenerator) GenGo() error {
+	err := error(nil)
 	fieldNameCount = make(map[string]int)
 	for _, ele := range gen.ProtoTree {
 		if ele == nil {
 			continue
 		}
 
+		next := true
 		protoName := reflect.TypeOf(ele).String()[6:]
-		if hook, ok := gen.Hooks[MakeFirstLowerCase(protoName)]; ok {
-			hook.OnGenerate(gen, ele)
-			if hook.ShouldOverride() {
-				continue
+		for _, hook := range gen.Hooks {
+			next, err = hook.OnGenerate(gen, protoName, ele)
+			if err != nil {
+				return err
 			}
+
+			// skip next hook
+			if !next {
+				break
+			}
+		}
+
+		// skip default behavior
+		if !next {
+			continue
 		}
 
 		funcName := fmt.Sprintf("Go%s", protoName)

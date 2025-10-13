@@ -37,7 +37,7 @@ type Options struct {
 	ParseFileMap        map[string][]interface{}
 	ProtoTree           []interface{}
 	RemoteSchema        map[string][]byte
-	Hooks               map[string]Hook
+	Hooks               []Hook
 
 	InElement        string
 	CurrentEle       string
@@ -108,15 +108,24 @@ func (opt *Options) Parse() (err error) {
 			break
 		}
 
+		next := true
 		switch element := token.(type) {
 		case xml.StartElement:
-			if hook, ok := opt.Hooks[element.Name.Local]; ok {
-				if err = hook.OnStartElement(opt, element, opt.ProtoTree); err != nil {
-					return
+			for _, hook := range opt.Hooks {
+				next, err = hook.OnStartElement(opt, element, opt.ProtoTree)
+				if err != nil {
+					return err
 				}
-				if hook.ShouldOverride() {
-					continue
+
+				// skip next hook
+				if !next {
+					break
 				}
+			}
+
+			// skip default behavior
+			if !next {
+				continue
 			}
 
 			opt.InElement = element.Name.Local
@@ -125,13 +134,21 @@ func (opt *Options) Parse() (err error) {
 				return
 			}
 		case xml.EndElement:
-			if hook, ok := opt.Hooks[element.Name.Local]; ok {
-				if err = hook.OnEndElement(opt, element, opt.ProtoTree); err != nil {
-					return
+			for _, hook := range opt.Hooks {
+				next, err = hook.OnEndElement(opt, element, opt.ProtoTree)
+				if err != nil {
+					return err
 				}
-				if hook.ShouldOverride() {
-					continue
+
+				// skip next hook
+				if !next {
+					break
 				}
+			}
+
+			// skip default behavior
+			if !next {
+				continue
 			}
 
 			funcName := fmt.Sprintf("End%s", MakeFirstUpperCase(element.Name.Local))
@@ -139,14 +156,23 @@ func (opt *Options) Parse() (err error) {
 				return
 			}
 		case xml.CharData:
-			if hook, ok := opt.Hooks[opt.InElement]; ok {
-				if err = hook.OnCharData(opt, string(element), opt.ProtoTree); err != nil {
-					return
+			for _, hook := range opt.Hooks {
+				next, err = hook.OnCharData(opt, string(element), opt.ProtoTree)
+				if err != nil {
+					return err
 				}
-				if hook.ShouldOverride() {
-					continue
+
+				// skip next hook
+				if !next {
+					break
 				}
 			}
+
+			// skip default behavior
+			if !next {
+				continue
+			}
+
 			if err = opt.OnCharData(string(element), opt.ProtoTree); err != nil {
 				return
 			}

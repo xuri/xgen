@@ -47,7 +47,7 @@ func TestParseGoExternal(t *testing.T) {
 //
 // The test cleans up files it generates unless leaveOutput is set to true. In which case, the generate file is left
 // on disk for manual inspection under <sourceDirectory>/<langDirName>/output.
-func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool, hooks map[string]Hook) {
+func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool, hooks []Hook) {
 	codeDir := filepath.Join(sourceDirectory, langDirName)
 
 	outputDir := filepath.Join(codeDir, "output")
@@ -158,7 +158,11 @@ func (h *AppinfoHook) ShouldOverride() bool {
 	return h.Override
 }
 
-func (h *AppinfoHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (err error) {
+func (h *AppinfoHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	if ele.Name.Local != "appinfo" {
+		return true, nil
+	}
+
 	h.OnStartElementRan = true
 
 	a := &Appinfo{}
@@ -186,45 +190,51 @@ func (h *AppinfoHook) OnStartElement(opt *Options, ele xml.StartElement, protoTr
 
 	h.Appinfo.Push(a)
 
-	return nil
+	return true, nil
 }
 
-func (h *AppinfoHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (err error) {
-	h.OnEndElementRan = true
+func (h *AppinfoHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	if ele.Name.Local == "appinfo" {
+		return true, nil
+	}
 
+	h.OnEndElementRan = true
 	opt.ProtoTree = append(opt.ProtoTree, h.Appinfo.Pop())
 
-	return nil
+	return true, nil
 }
 
-func (h *AppinfoHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (err error) {
+func (h *AppinfoHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
 	if h.Appinfo.Peek() != nil {
 		h.OnCharDataRan = true
 		h.Appinfo.Peek().(*Appinfo).Doc = ele
 	}
-	return nil
+	return true, nil
 }
 
-func (h *AppinfoHook) OnGenerate(gen *CodeGenerator, v interface{}) {
-	a, ok := v.(*Appinfo)
-	if !ok {
-		return
+func (h *AppinfoHook) OnGenerate(gen *CodeGenerator, protoName string, ele interface{}) (next bool, err error) {
+	h.OnGenerateRan = false
+	switch v := ele.(type) {
+	case *ComplexType:
+		if _, ok := gen.StructAST[v.Name]; !ok {
+			// for this fixture, at least one attribute must exist, and must have a name
+			for _, attribute := range v.Attributes {
+				h.OnGenerateRan = h.OnGenerateRan || attribute.Name != ""
+			}
+		}
 	}
-	h.OnGenerateRan = a != nil
-
-	// output
-	// gen.Field += fmt.Sprintf("// %s %s\n", a.Parent, a.Doc)
+	return true, nil
 }
 
 func TestParseGoWithAppinfoHook(t *testing.T) {
 	appinfoHook := &AppinfoHook{}
 	appinfoHook.Appinfo = NewStack()
-	hooks := map[string]Hook{
-		"appinfo": appinfoHook,
+	hooks := []Hook{
+		appinfoHook,
 	}
 	testParseForSource(t, "Go", "go", "go", testFixtureDir, false, hooks)
 	assert.True(t, appinfoHook.OnStartElementRan)
 	assert.True(t, appinfoHook.OnEndElementRan)
-	assert.True(t, appinfoHook.OnGenerateRan)
 	assert.True(t, appinfoHook.OnCharDataRan)
+	assert.True(t, appinfoHook.OnGenerateRan)
 }
