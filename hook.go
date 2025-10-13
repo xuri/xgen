@@ -9,4 +9,5 @@ type Hook interface {
 	OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error)
 	OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error)
 	OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error)
+	OnAddContent(gen *CodeGenerator, content *string)
 }

@@ -124,7 +124,6 @@ func main() {
 			ParseFileMap:        make(map[string][]interface{}),
 			ProtoTree:           make([]interface{}, 0),
 			RemoteSchema:        make(map[string][]byte),
-			Hooks:               make([]xgen.Hook, 0),
 		}).Parse(); err != nil {
 			fmt.Printf("process error on %s: %s\r\n", file, err.Error())
 			os.Exit(1)

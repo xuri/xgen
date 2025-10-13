@@ -37,7 +37,7 @@ type Options struct {
 	ParseFileMap        map[string][]interface{}
 	ProtoTree           []interface{}
 	RemoteSchema        map[string][]byte
-	Hooks               []Hook
+	Hook                Hook
 
 	InElement        string
 	CurrentEle       string
@@ -111,21 +111,16 @@ func (opt *Options) Parse() (err error) {
 		next := true
 		switch element := token.(type) {
 		case xml.StartElement:
-			for _, hook := range opt.Hooks {
-				next, err = hook.OnStartElement(opt, element, opt.ProtoTree)
+			if opt.Hook != nil {
+				next, err = opt.Hook.OnStartElement(opt, element, opt.ProtoTree)
 				if err != nil {
 					return err
 				}
 
-				// skip next hook
+				// skip to next element/token
 				if !next {
-					break
+					continue
 				}
-			}
-
-			// skip default behavior
-			if !next {
-				continue
 			}
 
 			opt.InElement = element.Name.Local
@@ -134,21 +129,16 @@ func (opt *Options) Parse() (err error) {
 				return
 			}
 		case xml.EndElement:
-			for _, hook := range opt.Hooks {
-				next, err = hook.OnEndElement(opt, element, opt.ProtoTree)
+			if opt.Hook != nil {
+				next, err = opt.Hook.OnEndElement(opt, element, opt.ProtoTree)
 				if err != nil {
 					return err
 				}
 
-				// skip next hook
+				// skip to next element/token
 				if !next {
-					break
+					continue
 				}
-			}
-
-			// skip default behavior
-			if !next {
-				continue
 			}
 
 			funcName := fmt.Sprintf("End%s", MakeFirstUpperCase(element.Name.Local))
@@ -156,21 +146,16 @@ func (opt *Options) Parse() (err error) {
 				return
 			}
 		case xml.CharData:
-			for _, hook := range opt.Hooks {
-				next, err = hook.OnCharData(opt, string(element), opt.ProtoTree)
+			if opt.Hook != nil {
+				next, err = opt.Hook.OnCharData(opt, string(element), opt.ProtoTree)
 				if err != nil {
 					return err
 				}
 
-				// skip next hook
+				// skip to next element/token
 				if !next {
-					break
+					continue
 				}
-			}
-
-			// skip default behavior
-			if !next {
-				continue
 			}
 
 			if err = opt.OnCharData(string(element), opt.ProtoTree); err != nil {
@@ -195,7 +180,7 @@ func (opt *Options) Parse() (err error) {
 			File:      path,
 			ProtoTree: opt.ProtoTree,
 			StructAST: map[string]string{},
-			Hooks:     opt.Hooks,
+			Hook:      opt.Hook,
 		}
 		funcName := fmt.Sprintf("Gen%s", MakeFirstUpperCase(opt.Lang))
 		if err = callFuncByName(generator, funcName, []reflect.Value{}); err != nil {
@@ -245,7 +230,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 				ParseFileMap:        opt.ParseFileMap,
 				ProtoTree:           make([]interface{}, 0),
 				Compact:             opt.Compact,
-				Hooks:               opt.Hooks,
+				Hook:                opt.Hook,
 			})
 			if parser.Parse() != nil {
 				return
@@ -274,7 +259,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			ParseFileMap:        opt.ParseFileMap,
 			ProtoTree:           make([]interface{}, 0),
 			Compact:             opt.Compact,
-			Hooks:               opt.Hooks,
+			Hook:                opt.Hook,
 		})
 		if parser.Parse() != nil {
 			return
@@ -297,7 +282,7 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		ParseFileMap:        opt.ParseFileMap,
 		ProtoTree:           make([]interface{}, 0),
 		Compact:             opt.Compact,
-		Hooks:               opt.Hooks,
+		Hook:                opt.Hook,
 	})
 	if parser.Parse() != nil {
 		return

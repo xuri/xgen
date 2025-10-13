@@ -28,7 +28,7 @@ type CodeGenerator struct {
 	ImportEncodingXML bool // For Go language
 	ProtoTree         []interface{}
 	StructAST         map[string]string
-	Hooks             []Hook
+	Hook              Hook
 }
 
 var goBuildinType = map[string]bool{
@@ -70,21 +70,16 @@ func (gen *CodeGenerator) GenGo() error {
 
 		next := true
 		protoName := reflect.TypeOf(ele).String()[6:]
-		for _, hook := range gen.Hooks {
-			next, err = hook.OnGenerate(gen, protoName, ele)
+		if gen.Hook != nil {
+			next, err = gen.Hook.OnGenerate(gen, protoName, ele)
 			if err != nil {
 				return err
 			}
 
-			// skip next hook
+			// skip to next element (in tree)
 			if !next {
-				break
+				continue
 			}
-		}
-
-		// skip default behavior
-		if !next {
-			continue
 		}
 
 		funcName := fmt.Sprintf("Go%s", protoName)
@@ -162,7 +157,12 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 			content := fmt.Sprintf(" []%s\n", genGoFieldType(fieldType))
 			gen.StructAST[v.Name] = content
 			fieldName := genGoFieldName(v.Name, true)
-			gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+			output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+			if gen.Hook != nil {
+				gen.Hook.OnAddContent(gen, &output)
+			}
+			gen.Field += output
 			return
 		}
 	}
@@ -185,7 +185,12 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 			}
 			content += "}\n"
 			gen.StructAST[v.Name] = content
-			gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+			output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+			if gen.Hook != nil {
+				gen.Hook.OnAddContent(gen, &output)
+			}
+			gen.Field += output
 		}
 		return
 	}
@@ -193,7 +198,12 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 		content := fmt.Sprintf(" %s\n", genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Base), gen.ProtoTree)))
 		gen.StructAST[v.Name] = content
 		fieldName := genGoFieldName(v.Name, true)
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 
@@ -275,7 +285,12 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 
@@ -311,7 +326,12 @@ func (gen *CodeGenerator) GoGroup(v *Group) {
 
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 
@@ -338,7 +358,12 @@ func (gen *CodeGenerator) GoAttributeGroup(v *AttributeGroup) {
 		}
 		content += "}\n"
 		gen.StructAST[v.Name] = content
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 
@@ -352,7 +377,12 @@ func (gen *CodeGenerator) GoElement(v *Element) {
 		content := fmt.Sprintf("\t%s%s\n", plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 		gen.StructAST[v.Name] = content
 		fieldName := genGoFieldName(v.Name, false)
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 
@@ -366,7 +396,12 @@ func (gen *CodeGenerator) GoAttribute(v *Attribute) {
 		content := fmt.Sprintf("\t%s%s\n", plural, genGoFieldType(getBasefromSimpleType(trimNSPrefix(v.Type), gen.ProtoTree)))
 		gen.StructAST[v.Name] = content
 		fieldName := genGoFieldName(v.Name, true)
-		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		output := fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+		if gen.Hook != nil {
+			gen.Hook.OnAddContent(gen, &output)
+		}
+		gen.Field += output
 	}
 }
 

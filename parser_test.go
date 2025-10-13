@@ -47,7 +47,7 @@ func TestParseGoExternal(t *testing.T) {
 //
 // The test cleans up files it generates unless leaveOutput is set to true. In which case, the generate file is left
 // on disk for manual inspection under <sourceDirectory>/<langDirName>/output.
-func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool, hooks []Hook) {
+func testParseForSource(t *testing.T, lang string, fileExt string, langDirName string, sourceDirectory string, leaveOutput bool, hook Hook) {
 	codeDir := filepath.Join(sourceDirectory, langDirName)
 
 	outputDir := filepath.Join(codeDir, "output")
@@ -87,7 +87,7 @@ func testParseForSource(t *testing.T, lang string, fileExt string, langDirName s
 					ParseFileList:       make(map[string]bool),
 					ParseFileMap:        make(map[string][]interface{}),
 					ProtoTree:           make([]interface{}, 0),
-					Hooks:               hooks,
+					Hook:                hook,
 				})
 				err = parser.Parse()
 				assert.NoError(t, err, file)
@@ -226,13 +226,14 @@ func (h *AppinfoHook) OnGenerate(gen *CodeGenerator, protoName string, ele inter
 	return true, nil
 }
 
+func (h *AppinfoHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// no-op
+}
+
 func TestParseGoWithAppinfoHook(t *testing.T) {
 	appinfoHook := &AppinfoHook{}
 	appinfoHook.Appinfo = NewStack()
-	hooks := []Hook{
-		appinfoHook,
-	}
-	testParseForSource(t, "Go", "go", "go", testFixtureDir, false, hooks)
+	testParseForSource(t, "Go", "go", "go", testFixtureDir, false, appinfoHook)
 	assert.True(t, appinfoHook.OnStartElementRan)
 	assert.True(t, appinfoHook.OnEndElementRan)
 	assert.True(t, appinfoHook.OnCharDataRan)
