@@ -13,6 +13,7 @@ import (
 	"go/format"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -171,6 +172,18 @@ func (gen *CodeGenerator) GoSimpleType(v *SimpleType) {
 		gen.StructAST[v.Name] = content
 		fieldName := genGoFieldName(v.Name, true)
 		gen.Field += fmt.Sprintf("%stype %s%s", genFieldComment(fieldName, v.Doc, "//"), fieldName, gen.StructAST[v.Name])
+
+		if len(v.Restriction.Enum) > 0 {
+			// create "enum" consts
+			gen.Field += "const (\n"
+			re := regexp.MustCompile("[^a-zA-Z0-9]+")
+			for _, enumVal := range v.Restriction.Enum {
+				constName := re.ReplaceAllString(fmt.Sprintf("%s%s", fieldName, genGoFieldName(enumVal, false)), "_")
+				gen.Field += fmt.Sprintf("\t%s %s = \"%s\"\n", constName, fieldName, enumVal)
+			}
+			gen.Field += ")\n"
+		}
+
 	}
 }
 
@@ -193,7 +206,12 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 
 		for _, attribute := range v.Attributes {
-			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(attribute.Type), gen.ProtoTree))
+			trimType := trimNSPrefix(attribute.Type)
+			fieldType := genGoFieldType(getBasefromSimpleType(trimType, gen.ProtoTree))
+			if isGoBuiltInType(fieldType) {
+				fieldType = trimType
+			}
+
 			var optional string
 			if attribute.Optional {
 				if !strings.HasPrefix(fieldType, `*`) {
@@ -216,7 +234,11 @@ func (gen *CodeGenerator) GoComplexType(v *ComplexType) {
 		}
 
 		for _, element := range v.Elements {
-			fieldType := genGoFieldType(getBasefromSimpleType(trimNSPrefix(element.Type), gen.ProtoTree))
+			trimType := trimNSPrefix(element.Type)
+			fieldType := genGoFieldType(getBasefromSimpleType(trimType, gen.ProtoTree))
+			if isGoBuiltInType(fieldType) {
+				fieldType = trimType
+			}
 
 			if element.Plural {
 				fieldType = "[]" + fieldType
