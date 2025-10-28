@@ -43,6 +43,67 @@ $ xgen [<flag> ...] <XSD file or directory> ...
    -v        Output version and exit
 ```
 
+## Programmatic Usage
+
+You can use xgen as a library in your Go code for more control over the parsing and code generation process.
+
+### Basic Usage
+
+```go
+import "github.com/xuri/xgen"
+
+parser := xgen.NewParser(&xgen.Options{
+    FilePath:            "schema.xsd",
+    OutputDir:           "output",
+    Lang:                "Go",
+    Package:             "mypackage",
+    IncludeMap:          make(map[string]bool),
+    LocalNameNSMap:      make(map[string]string),
+    NSSchemaLocationMap: make(map[string]string),
+    ParseFileList:       make(map[string]bool),
+    ParseFileMap:        make(map[string][]interface{}),
+    ProtoTree:           make([]interface{}, 0),
+})
+err := parser.Parse()
+```
+
+### Customization with Hooks
+
+The `Hook` interface allows you to customize the parsing and code generation process by intercepting events at various stages:
+
+```go
+type CustomHook struct{}
+
+func (h *CustomHook) OnStartElement(opt *xgen.Options, ele xml.StartElement, protoTree []interface{}) (bool, error) {
+    // Intercept XML elements during parsing
+    return true, nil
+}
+
+func (h *CustomHook) OnGenerate(gen *xgen.CodeGenerator, protoName string, v interface{}) (bool, error) {
+    // Intercept code generation for each type
+    return true, nil
+}
+
+func (h *CustomHook) OnAddContent(gen *xgen.CodeGenerator, content *string) {
+    // Modify generated code before writing to file
+}
+
+// ... implement other Hook methods ...
+
+parser := xgen.NewParser(&xgen.Options{
+    // ... other options ...
+    Hook: &CustomHook{},
+})
+```
+
+Use cases for hooks include:
+- Parsing custom XSD extensions or vendor-specific annotations
+- Customizing type mappings between XSD and target language types
+- Injecting additional methods or documentation into generated code
+- Filtering elements during parsing or code generation
+
+See the `Hook` interface documentation and `TestParseGoWithAppinfoHook` in `parser_test.go` for complete examples.
+
 ## XSD (XML Schema Definition)
 
 XSD, a recommendation of the World Wide Web Consortium ([W3C](https://www.w3.org)), specifies how to formally describe the elements in an Extensible Markup Language ([XML](https://www.w3.org/TR/xml/)) document. It can be used by programmers to verify each piece of item content in a document. They can check if it adheres to the description of the element it is placed in.
