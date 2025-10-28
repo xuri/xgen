@@ -1,10 +1,9 @@
-module github.com/raduionita-wk/xgen
+module github.com/xuri/xgen
 
 go 1.23.0
 
 require (
 	github.com/stretchr/testify v1.7.1
-	github.com/xuri/xgen v0.0.0-20250926003044-2cb22a35b935
 	golang.org/x/net v0.40.0
 )
 

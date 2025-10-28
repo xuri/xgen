@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/raduionita-wk/xgen"
+	"github.com/xuri/xgen"
 )
 
 // Config holds user-defined overrides and filters that are used when
