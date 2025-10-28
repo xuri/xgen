@@ -239,3 +239,173 @@ func TestParseGoWithAppinfoHook(t *testing.T) {
 	assert.True(t, appinfoHook.OnCharDataRan)
 	assert.True(t, appinfoHook.OnGenerateRan)
 }
+
+// ComprehensiveHook tests skipping elements, filtering generation, and content modification
+type ComprehensiveHook struct {
+	SkippedAnnotations int
+	SkippedTypes       []string
+	ModifiedContent    bool
+}
+
+func (h *ComprehensiveHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (bool, error) {
+	// Skip all <annotation> elements to test filtering behavior
+	if ele.Name.Local == "annotation" {
+		h.SkippedAnnotations++
+		return false, nil // Skip processing this element
+	}
+	return true, nil
+}
+
+func (h *ComprehensiveHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ComprehensiveHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ComprehensiveHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	// Skip generating code for SimpleType named "myType1" to test generation filtering
+	if protoName == "SimpleType" {
+		if st, ok := v.(*SimpleType); ok && st.Name == "myType1" {
+			h.SkippedTypes = append(h.SkippedTypes, st.Name)
+			return false, nil // Skip generating this type
+		}
+	}
+	return true, nil
+}
+
+func (h *ComprehensiveHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// Modify generated content to add a custom marker comment
+	if strings.Contains(*content, "type MyType2") {
+		*content = strings.Replace(*content, "type MyType2", "// HOOK_MODIFIED\ntype MyType2", 1)
+		h.ModifiedContent = true
+	}
+}
+
+func TestHookSkipAndModify(t *testing.T) {
+	hook := &ComprehensiveHook{
+		SkippedTypes: make([]string, 0),
+	}
+
+	// Create temp directory for output
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "hook-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	// Run parser with hook
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	files, err := GetFileList(inputDir)
+	require.NoError(t, err)
+
+	for _, file := range files {
+		if filepath.Ext(file) == ".xsd" {
+			parser := NewParser(&Options{
+				FilePath:            file,
+				InputDir:            inputDir,
+				OutputDir:           tempDir,
+				Lang:                "Go",
+				IncludeMap:          make(map[string]bool),
+				LocalNameNSMap:      make(map[string]string),
+				NSSchemaLocationMap: make(map[string]string),
+				ParseFileList:       make(map[string]bool),
+				ParseFileMap:        make(map[string][]interface{}),
+				ProtoTree:           make([]interface{}, 0),
+				Hook:                hook,
+			})
+			err = parser.Parse()
+			assert.NoError(t, err)
+		}
+	}
+
+	// Verify skipping worked - annotations in base64.xsd should have been skipped
+	assert.Greater(t, hook.SkippedAnnotations, 0, "Hook should have skipped annotation elements")
+
+	// Verify type filtering worked
+	assert.Contains(t, hook.SkippedTypes, "myType1", "Hook should have skipped myType1 generation")
+
+	// Read generated file and verify modifications
+	generatedFile := filepath.Join(tempDir, "base64.xsd.go")
+	content, err := ioutil.ReadFile(generatedFile)
+	require.NoError(t, err)
+
+	generatedCode := string(content)
+
+	// Verify hook comment was added
+	if hook.ModifiedContent {
+		assert.Contains(t, generatedCode, "// HOOK_MODIFIED", "Generated code should contain hook modifications")
+	}
+
+	// Verify skipped type was not generated
+	// MyType1 should not have its own type declaration (it's used as a field type but shouldn't have "type MyType1 ")
+	assert.NotContains(t, generatedCode, "type MyType1 ", "Skipped type should not have its own type declaration")
+
+	// Verify it's still referenced in TopLevel (the field name, not the type declaration)
+	assert.Contains(t, generatedCode, "MyType1         []string", "Field referencing the type should still exist")
+
+	// Verify other types were still generated
+	assert.Contains(t, generatedCode, "type MyType2", "Non-skipped types should be generated")
+}
+
+// ErrorTestHook tests error propagation from hooks
+type ErrorTestHook struct{}
+
+func (h *ErrorTestHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	// Return error when encountering specific element
+	if ele.Name.Local == "complexType" {
+		for _, attr := range ele.Attr {
+			if attr.Name.Local == "name" && attr.Value == "myType3" {
+				return false, fmt.Errorf("intentional error for testing: forbidden type myType3")
+			}
+		}
+	}
+	return true, nil
+}
+
+func (h *ErrorTestHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ErrorTestHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ErrorTestHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ErrorTestHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// no-op
+}
+
+func TestHookErrorHandling(t *testing.T) {
+	hook := &ErrorTestHook{}
+
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	file := filepath.Join(inputDir, "base64.xsd")
+
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "error-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parser := NewParser(&Options{
+		FilePath:            file,
+		InputDir:            inputDir,
+		OutputDir:           tempDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+		Hook:                hook,
+	})
+
+	err = parser.Parse()
+
+	// Verify that the error from the hook was propagated
+	assert.Error(t, err, "Hook error should be propagated")
+	assert.Contains(t, err.Error(), "intentional error for testing", "Error should contain hook's error message")
+	assert.Contains(t, err.Error(), "forbidden type myType3", "Error should identify the specific type")
+}
