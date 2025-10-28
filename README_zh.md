@@ -39,7 +39,6 @@ $ xgen [<flag> ...] <XSD file or directory> ...
    -o <path> 指定输出代码目录
    -p        指定生成代码所属包名称
    -l        指定生成类型或类声明代码语言类型 (Go/C/Java/Rust/TypeScript)
-   -c        压缩输出的 XML 注解
    -h        查看此帮助信息并退出
    -v        查看版本号并退出
 ```

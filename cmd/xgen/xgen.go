@@ -40,7 +40,6 @@ type Config struct {
 	Pkg     string
 	Lang    string
 	Version string
-	Compact bool
 }
 
 // Cfg are the default config for xgen. The default package name and output
@@ -48,7 +47,6 @@ type Config struct {
 var Cfg = Config{
 	Pkg:     "schema",
 	Version: "0.1.0",
-	Compact: false,
 }
 
 // SupportLang defines supported language types.
@@ -67,11 +65,10 @@ func parseFlags() *Config {
 	pkgPtr := flag.String("p", "", "Specify the package name")
 	langPtr := flag.String("l", "", "Specify the language of generated code")
 	verPtr := flag.Bool("v", false, "Show version and exit")
-	compactPtr := flag.Bool("c", false, "Should compact outputted xml annotations")
 	helpPtr := flag.Bool("h", false, "Show this help and exit")
 	flag.Parse()
 	if *helpPtr {
-		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2025 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -c     \tCompact outputted xml annotations\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
+		fmt.Printf("xgen version: %s\r\nCopyright (c) 2020 - 2025 Ri Xu https://xuri.me All rights reserved.\r\n\r\nUsage:\r\n$ xgen [<flag> ...] <XSD file or directory> ...\n  -i <path>\tInput file path or directory for the XML schema definition\r\n  -o <path>\tOutput file path or directory for the generated code\r\n  -p     \tSpecify the package name\r\n  -l      \tSpecify the language of generated code (Go/C/Java/Rust/TypeScript)\r\n  -h     \tOutput this help and exit\r\n  -v     \tOutput version and exit\r\n", Cfg.Version)
 		os.Exit(0)
 	}
 	if *verPtr {
@@ -98,7 +95,6 @@ func parseFlags() *Config {
 	if *pkgPtr != "" {
 		Cfg.Pkg = *pkgPtr
 	}
-	Cfg.Compact = *compactPtr
 	return &Cfg
 }
 
@@ -116,7 +112,6 @@ func main() {
 			OutputDir:           cfg.O,
 			Lang:                cfg.Lang,
 			Package:             cfg.Pkg,
-			Compact:             cfg.Compact,
 			IncludeMap:          make(map[string]bool),
 			LocalNameNSMap:      make(map[string]string),
 			NSSchemaLocationMap: make(map[string]string),

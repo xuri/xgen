@@ -26,7 +26,6 @@ type Options struct {
 	FileDir             string
 	InputDir            string
 	OutputDir           string
-	Compact             bool
 	Extract             bool
 	Lang                string
 	Package             string
@@ -174,7 +173,6 @@ func (opt *Options) Parse() (err error) {
 			os.Exit(1)
 		}
 		generator := &CodeGenerator{
-			Compact:   opt.Compact,
 			Lang:      opt.Lang,
 			Package:   opt.Package,
 			File:      path,
@@ -229,7 +227,6 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 				ParseFileList:       opt.ParseFileList,
 				ParseFileMap:        opt.ParseFileMap,
 				ProtoTree:           make([]interface{}, 0),
-				Compact:             opt.Compact,
 				Hook:                opt.Hook,
 			})
 			if parser.Parse() != nil {
@@ -258,7 +255,6 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 			ParseFileList:       opt.ParseFileList,
 			ParseFileMap:        opt.ParseFileMap,
 			ProtoTree:           make([]interface{}, 0),
-			Compact:             opt.Compact,
 			Hook:                opt.Hook,
 		})
 		if parser.Parse() != nil {
@@ -281,7 +277,6 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		ParseFileList:       opt.ParseFileList,
 		ParseFileMap:        opt.ParseFileMap,
 		ProtoTree:           make([]interface{}, 0),
-		Compact:             opt.Compact,
 		Hook:                opt.Hook,
 	})
 	if parser.Parse() != nil {

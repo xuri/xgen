@@ -39,7 +39,6 @@ $ xgen [<flag> ...] <XSD file or directory> ...
    -o <path> Output file path or directory for the generated code
    -p        Specify the package name
    -l        Specify the language of generated code (Go/C/Java/Rust/TypeScript)
-   -c        Compact outputted xml annotations
    -h        Output this help and exit
    -v        Output version and exit
 ```
