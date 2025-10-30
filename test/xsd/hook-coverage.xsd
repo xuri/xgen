@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+        targetNamespace="http://example.org/test">
+  
+  <!-- SimpleType with list - triggers line 162 -->
+  <simpleType name="ListType">
+    <list itemType="string"/>
+  </simpleType>
+  
+  <!-- SimpleType with union - triggers line 190 -->
+  <simpleType name="UnionType">
+    <union memberTypes="string int"/>
+  </simpleType>
+  
+  <!-- Basic SimpleType - triggers line 203 -->
+  <simpleType name="BasicType">
+    <restriction base="string">
+      <maxLength value="100"/>
+    </restriction>
+  </simpleType>
+  
+  <!-- ComplexType - triggers line 282 -->
+  <complexType name="ComplexTypeTest">
+    <sequence>
+      <element name="field1" type="string"/>
+      <element name="field2" type="int"/>
+    </sequence>
+    <attribute name="attr1" type="string"/>
+  </complexType>
+  
+  <!-- Group - triggers line 323 -->
+  <group name="TestGroup">
+    <sequence>
+      <element name="groupField1" type="string"/>
+      <element name="groupField2" type="int"/>
+    </sequence>
+  </group>
+  
+  <!-- AttributeGroup - triggers line 351 -->
+  <attributeGroup name="TestAttributeGroup">
+    <attribute name="attrGroupField1" type="string"/>
+    <attribute name="attrGroupField2" type="int"/>
+  </attributeGroup>
+  
+  <!-- Element that will generate code - triggers line 370 -->
+  <element name="TestElement" type="string"/>
+</schema>
+

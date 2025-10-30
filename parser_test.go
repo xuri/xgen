@@ -538,3 +538,150 @@ func TestHookOnCharDataSkip(t *testing.T) {
 	assert.Greater(t, hook.ProcessedCount, 0, "Hook should have processed character data")
 	assert.Greater(t, hook.SkippedCharData, 0, "Hook should have skipped some character data")
 }
+
+// ContentTrackingHook tracks all OnAddContent calls for different type generators
+type ContentTrackingHook struct {
+	SimpleTypeCount       int
+	ComplexTypeCount      int
+	GroupCount            int
+	AttributeGroupCount   int
+	ElementCount          int
+	AttributeCount        int
+	ContentModifications  []string
+}
+
+func (h *ContentTrackingHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ContentTrackingHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ContentTrackingHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ContentTrackingHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *ContentTrackingHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// Track which type of content is being generated based on the content
+	if strings.Contains(*content, "type") {
+		if strings.Contains(*content, "struct {") {
+			if strings.Contains(*content, "Attr") && strings.Contains(*content, "attr,attr") {
+				h.AttributeGroupCount++
+				h.ContentModifications = append(h.ContentModifications, "AttributeGroup")
+			} else if strings.Contains(*content, "Group") {
+				h.GroupCount++
+				h.ContentModifications = append(h.ContentModifications, "Group")
+			} else {
+				h.ComplexTypeCount++
+				h.ContentModifications = append(h.ContentModifications, "ComplexType")
+			}
+		} else if strings.Contains(*content, "[]") || strings.Contains(*content, "string") {
+			h.SimpleTypeCount++
+			h.ContentModifications = append(h.ContentModifications, "SimpleType")
+		}
+		
+		// Add a comment marker to prove modification happened
+		*content = "// HOOK_TRACKED\n" + *content
+	}
+}
+
+func TestOnAddContentCoverage(t *testing.T) {
+	hook := &ContentTrackingHook{
+		ContentModifications: make([]string, 0),
+	}
+
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	file := filepath.Join(inputDir, "hook-coverage.xsd")
+
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "content-tracking-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parser := NewParser(&Options{
+		FilePath:            file,
+		InputDir:            inputDir,
+		OutputDir:           tempDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+		Hook:                hook,
+	})
+
+	err = parser.Parse()
+	assert.NoError(t, err, "Parse should succeed")
+
+	// Verify OnAddContent was called for different type generators
+	// Note: Not all type generators may be triggered depending on XSD structure
+	totalCalls := hook.SimpleTypeCount + hook.ComplexTypeCount + hook.GroupCount + hook.AttributeGroupCount
+	assert.Greater(t, totalCalls, 0, "Should have called OnAddContent at least once")
+	
+	// Log what was generated
+	t.Logf("OnAddContent calls - SimpleType: %d (lines 162,190,203), ComplexType: %d (line 282), Group: %d (line 323), AttributeGroup: %d (line 351)",
+		hook.SimpleTypeCount, hook.ComplexTypeCount, hook.GroupCount, hook.AttributeGroupCount)
+
+	// Verify content modifications were tracked
+	assert.Greater(t, len(hook.ContentModifications), 0, "Should have tracked content modifications")
+
+	// Read generated file and verify hook markers exist
+	generatedFile := filepath.Join(tempDir, "hook-coverage.xsd.go")
+	content, err := ioutil.ReadFile(generatedFile)
+	require.NoError(t, err)
+
+	generatedCode := string(content)
+	
+	// Verify hook comment was added to generated types
+	assert.Contains(t, generatedCode, "// HOOK_TRACKED", "Generated code should contain hook tracking markers")
+	
+	// Count how many times the hook marker appears
+	hookMarkerCount := strings.Count(generatedCode, "// HOOK_TRACKED")
+	t.Logf("Found %d hook tracking markers in generated code", hookMarkerCount)
+	assert.Greater(t, hookMarkerCount, 0, "Should have at least one hook marker")
+}
+
+// TestOnAddContentForAllTypes specifically tests each type generator's OnAddContent call
+func TestOnAddContentForAllTypes(t *testing.T) {
+	// Use base64.xsd which has diverse types
+	hook := &ContentTrackingHook{
+		ContentModifications: make([]string, 0),
+	}
+
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	file := filepath.Join(inputDir, "base64.xsd")
+
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "all-types-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parser := NewParser(&Options{
+		FilePath:            file,
+		InputDir:            inputDir,
+		OutputDir:           tempDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+		Hook:                hook,
+	})
+
+	err = parser.Parse()
+	assert.NoError(t, err, "Parse should succeed")
+
+	// base64.xsd has SimpleTypes and ComplexTypes
+	assert.Greater(t, hook.SimpleTypeCount, 0, "Should have called OnAddContent for SimpleTypes")
+	assert.Greater(t, hook.ComplexTypeCount, 0, "Should have called OnAddContent for ComplexTypes")
+	
+	t.Logf("OnAddContent calls - SimpleType: %d, ComplexType: %d, Group: %d, AttributeGroup: %d",
+		hook.SimpleTypeCount, hook.ComplexTypeCount, hook.GroupCount, hook.AttributeGroupCount)
+}
