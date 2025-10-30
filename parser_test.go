@@ -409,3 +409,132 @@ func TestHookErrorHandling(t *testing.T) {
 	assert.Contains(t, err.Error(), "intentional error for testing", "Error should contain hook's error message")
 	assert.Contains(t, err.Error(), "forbidden type myType3", "Error should identify the specific type")
 }
+
+// CharDataErrorHook tests error handling in OnCharData
+type CharDataErrorHook struct {
+	EncounteredCharData bool
+}
+
+func (h *CharDataErrorHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataErrorHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataErrorHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	// Return error on non-empty character data
+	trimmed := strings.TrimSpace(ele)
+	if trimmed != "" {
+		h.EncounteredCharData = true
+		return false, fmt.Errorf("intentional OnCharData error: got data '%s'", trimmed)
+	}
+	return true, nil
+}
+
+func (h *CharDataErrorHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataErrorHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// no-op
+}
+
+func TestHookOnCharDataError(t *testing.T) {
+	hook := &CharDataErrorHook{}
+
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	file := filepath.Join(inputDir, "base64.xsd")
+
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "chardata-error-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parser := NewParser(&Options{
+		FilePath:            file,
+		InputDir:            inputDir,
+		OutputDir:           tempDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+		Hook:                hook,
+	})
+
+	err = parser.Parse()
+
+	// Verify that the error from OnCharData was propagated
+	assert.Error(t, err, "OnCharData error should be propagated")
+	assert.Contains(t, err.Error(), "intentional OnCharData error", "Error should contain OnCharData's error message")
+	assert.True(t, hook.EncounteredCharData, "Hook should have encountered character data")
+}
+
+// CharDataSkipHook tests skipping behavior in OnCharData
+type CharDataSkipHook struct {
+	SkippedCharData int
+	ProcessedCount  int
+}
+
+func (h *CharDataSkipHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataSkipHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataSkipHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	h.ProcessedCount++
+	// Skip processing for character data containing "appinfo"
+	if strings.Contains(ele, "appinfo") {
+		h.SkippedCharData++
+		return false, nil // Skip further processing
+	}
+	return true, nil
+}
+
+func (h *CharDataSkipHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *CharDataSkipHook) OnAddContent(gen *CodeGenerator, content *string) {
+	// no-op
+}
+
+func TestHookOnCharDataSkip(t *testing.T) {
+	hook := &CharDataSkipHook{}
+
+	inputDir := filepath.Join(testFixtureDir, "xsd")
+	file := filepath.Join(inputDir, "base64.xsd")
+
+	tempDir, err := ioutil.TempDir(filepath.Join(testFixtureDir, "go"), "chardata-skip-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	parser := NewParser(&Options{
+		FilePath:            file,
+		InputDir:            inputDir,
+		OutputDir:           tempDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+		Hook:                hook,
+	})
+
+	err = parser.Parse()
+
+	// Parsing should succeed even though we skipped some character data
+	assert.NoError(t, err, "Parse should succeed when skipping character data")
+
+	// Verify that the hook processed character data and skipped some
+	assert.Greater(t, hook.ProcessedCount, 0, "Hook should have processed character data")
+	assert.Greater(t, hook.SkippedCharData, 0, "Hook should have skipped some character data")
+}
