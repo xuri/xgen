@@ -539,7 +539,123 @@ func TestHookOnCharDataSkip(t *testing.T) {
 	assert.Greater(t, hook.SkippedCharData, 0, "Hook should have skipped some character data")
 }
 
-func TestHookIsNil(t *testing.T) {
+// OnAddContentTestHook tracks OnAddContent calls
+type OnAddContentTestHook struct {
+	OnAddContentCallCount int
+}
+
+func (h *OnAddContentTestHook) OnStartElement(opt *Options, ele xml.StartElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *OnAddContentTestHook) OnEndElement(opt *Options, ele xml.EndElement, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *OnAddContentTestHook) OnCharData(opt *Options, ele string, protoTree []interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *OnAddContentTestHook) OnGenerate(gen *CodeGenerator, protoName string, v interface{}) (next bool, err error) {
+	return true, nil
+}
+
+func (h *OnAddContentTestHook) OnAddContent(gen *CodeGenerator, content *string) {
+	h.OnAddContentCallCount++
+}
+
+// TestOnAddContentHookNotNil tests all locations where: if gen.Hook != nil { gen.Hook.OnAddContent(gen, &output) }
+// This covers the TRUE branch (gen.Hook != nil)
+func TestOnAddContentHookNotNil(t *testing.T) {
+	fieldNameCount = make(map[string]int)
+
+	hook := &OnAddContentTestHook{}
+	gen := &CodeGenerator{
+		Lang:      "Go",
+		StructAST: make(map[string]string),
+		Hook:      hook, // NOT nil
+	}
+
+	tests := []struct {
+		name     string
+		testFunc func()
+	}{
+		{
+			name: "GoSimpleType_List",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{Name: "ListType", Base: "string", List: true})
+			},
+		},
+		{
+			name: "GoSimpleType_Union",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{
+					Name:        "UnionType",
+					Union:       true,
+					MemberTypes: map[string]string{"string": "string", "int": "int"},
+				})
+			},
+		},
+		{
+			name: "GoSimpleType_Base",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{Name: "BaseType", Base: "string"})
+			},
+		},
+		{
+			name: "GoComplexType",
+			testFunc: func() {
+				gen.GoComplexType(&ComplexType{
+					Name:     "ComplexType",
+					Elements: []Element{{Name: "Field1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoGroup",
+			testFunc: func() {
+				gen.GoGroup(&Group{
+					Name:     "GroupType",
+					Elements: []Element{{Name: "Element1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoAttributeGroup",
+			testFunc: func() {
+				gen.GoAttributeGroup(&AttributeGroup{
+					Name:       "AttrGroupType",
+					Attributes: []Attribute{{Name: "Attr1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoElement",
+			testFunc: func() {
+				gen.GoElement(&Element{Name: "ElementType", Type: "string"})
+			},
+		},
+		{
+			name: "GoAttribute",
+			testFunc: func() {
+				gen.GoAttribute(&Attribute{Name: "AttributeType", Type: "string"})
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			initialCount := hook.OnAddContentCallCount
+			tt.testFunc()
+			assert.Greater(t, hook.OnAddContentCallCount, initialCount,
+				"OnAddContent should be called when Hook is not nil for %s", tt.name)
+		})
+	}
+}
+
+// TestOnAddContentHookIsNil tests all locations where: if gen.Hook != nil { gen.Hook.OnAddContent(gen, &output) }
+// This covers the FALSE branch (gen.Hook == nil)
+func TestOnAddContentHookIsNil(t *testing.T) {
 	fieldNameCount = make(map[string]int)
 
 	gen := &CodeGenerator{
@@ -548,13 +664,77 @@ func TestHookIsNil(t *testing.T) {
 		Hook:      nil, // IS nil
 	}
 
-	simpleType := &SimpleType{
-		Name: "TestType",
-		Base: "string",
+	tests := []struct {
+		name     string
+		testFunc func()
+	}{
+		{
+			name: "GoSimpleType_List",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{Name: "ListType", Base: "string", List: true})
+			},
+		},
+		{
+			name: "GoSimpleType_Union",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{
+					Name:        "UnionType",
+					Union:       true,
+					MemberTypes: map[string]string{"string": "string", "int": "int"},
+				})
+			},
+		},
+		{
+			name: "GoSimpleType_Base",
+			testFunc: func() {
+				gen.GoSimpleType(&SimpleType{Name: "BaseType", Base: "string"})
+			},
+		},
+		{
+			name: "GoComplexType",
+			testFunc: func() {
+				gen.GoComplexType(&ComplexType{
+					Name:     "ComplexType",
+					Elements: []Element{{Name: "Field1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoGroup",
+			testFunc: func() {
+				gen.GoGroup(&Group{
+					Name:     "GroupType",
+					Elements: []Element{{Name: "Element1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoAttributeGroup",
+			testFunc: func() {
+				gen.GoAttributeGroup(&AttributeGroup{
+					Name:       "AttrGroupType",
+					Attributes: []Attribute{{Name: "Attr1", Type: "string"}},
+				})
+			},
+		},
+		{
+			name: "GoElement",
+			testFunc: func() {
+				gen.GoElement(&Element{Name: "ElementType", Type: "string"})
+			},
+		},
+		{
+			name: "GoAttribute",
+			testFunc: func() {
+				gen.GoAttribute(&Attribute{Name: "AttributeType", Type: "string"})
+			},
+		},
 	}
 
-	// Should not panic (false branch - OnAddContent not called)
-	assert.NotPanics(t, func() {
-		gen.GoSimpleType(simpleType)
-	}, "Should not panic when Hook is nil")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NotPanics(t, tt.testFunc,
+				"Should not panic when Hook is nil for %s", tt.name)
+		})
+	}
 }
