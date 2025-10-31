@@ -538,3 +538,23 @@ func TestHookOnCharDataSkip(t *testing.T) {
 	assert.Greater(t, hook.ProcessedCount, 0, "Hook should have processed character data")
 	assert.Greater(t, hook.SkippedCharData, 0, "Hook should have skipped some character data")
 }
+
+func TestHookIsNil(t *testing.T) {
+	fieldNameCount = make(map[string]int)
+
+	gen := &CodeGenerator{
+		Lang:      "Go",
+		StructAST: make(map[string]string),
+		Hook:      nil, // IS nil
+	}
+
+	simpleType := &SimpleType{
+		Name: "TestType",
+		Base: "string",
+	}
+
+	// Should not panic (false branch - OnAddContent not called)
+	assert.NotPanics(t, func() {
+		gen.GoSimpleType(simpleType)
+	}, "Should not panic when Hook is nil")
+}
