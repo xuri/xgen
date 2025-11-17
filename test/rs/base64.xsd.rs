@@ -14,7 +14,7 @@ pub struct MyType1 {
 }
 
 
-// MyType2 ...
+// MyType2 is appinfo-myType2-appinfo
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct MyType2 {
 	#[serde(rename = "length")]

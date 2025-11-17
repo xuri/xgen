@@ -3,7 +3,7 @@
 // MyType1 ...
 typedef char MyType1[];
 
-// MyType2 ...
+// MyType2 is appinfo-myType2-appinfo
 typedef struct {
 	int LengthAttr; // attr, optional
 } MyType2;

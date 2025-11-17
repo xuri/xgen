@@ -43,6 +43,67 @@ $ xgen [<flag> ...] <XSD file or directory> ...
    -v        查看版本号并退出
 ```
 
+## 编程方式使用
+
+您可以在 Go 代码中将 xgen 作为库使用，以便更好地控制解析和代码生成过程。
+
+### 基本使用
+
+```go
+import "github.com/xuri/xgen"
+
+parser := xgen.NewParser(&xgen.Options{
+    FilePath:            "schema.xsd",
+    OutputDir:           "output",
+    Lang:                "Go",
+    Package:             "mypackage",
+    IncludeMap:          make(map[string]bool),
+    LocalNameNSMap:      make(map[string]string),
+    NSSchemaLocationMap: make(map[string]string),
+    ParseFileList:       make(map[string]bool),
+    ParseFileMap:        make(map[string][]interface{}),
+    ProtoTree:           make([]interface{}, 0),
+})
+err := parser.Parse()
+```
+
+### 通过 Hook 自定义
+
+`Hook` 接口允许您通过拦截各个阶段的事件来自定义解析和代码生成过程：
+
+```go
+type CustomHook struct{}
+
+func (h *CustomHook) OnStartElement(opt *xgen.Options, ele xml.StartElement, protoTree []interface{}) (bool, error) {
+    // 在解析期间拦截 XML 元素
+    return true, nil
+}
+
+func (h *CustomHook) OnGenerate(gen *xgen.CodeGenerator, protoName string, v interface{}) (bool, error) {
+    // 拦截每个类型的代码生成
+    return true, nil
+}
+
+func (h *CustomHook) OnAddContent(gen *xgen.CodeGenerator, content *string) {
+    // 在写入文件之前修改生成的代码
+}
+
+// ... 实现其他 Hook 方法 ...
+
+parser := xgen.NewParser(&xgen.Options{
+    // ... 其他选项 ...
+    Hook: &CustomHook{},
+})
+```
+
+Hook 的使用场景包括：
+- 解析自定义 XSD 扩展或供应商特定的注释
+- 自定义 XSD 和目标语言类型之间的类型映射
+- 向生成的代码中注入额外的方法或文档
+- 在解析或代码生成过程中过滤元素
+
+有关完整示例，请参阅 `Hook` 接口文档和 `parser_test.go` 中的 `TestParseGoWithAppinfoHook`。
+
 ## XSD (XML Schema Definition)
 
 XSD 是万维网联盟 ([W3C](https://www.w3.org)) 推荐的标准，它指定了在可扩展标记语言 ([XML](https://www.w3.org/TR/xml/)) 文档中描述元素的规范。开发者可以使用它来验证文档中的每个项目内容，并可以检查它是否符合放置元素的说明。

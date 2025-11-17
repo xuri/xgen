@@ -19,7 +19,7 @@ public class MyType1 {
 	protected List<Byte> MyType1;
 }
 
-// MyType2 ...
+// MyType2 is appinfo-myType2-appinfo
 public class MyType2 {
 	@XmlAttribute(name = "length")
 	protected Integer LengthAttr;

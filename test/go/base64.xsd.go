@@ -9,7 +9,7 @@ import (
 // MyType1 ...
 type MyType1 string
 
-// MyType2 ...
+// MyType2 is appinfo-myType2-appinfo
 type MyType2 struct {
 	XMLName    xml.Name `xml:"myType2"`
 	LengthAttr *int     `xml:"length,attr"`
