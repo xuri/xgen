@@ -219,7 +219,7 @@ func callFuncByName(receiver interface{}, name string, params []reflect.Value) (
 	return
 }
 
-// isValidUrl tests a string to determine if it is a well-structured url or
+// isValidURL tests a string to determine if it is a well-structured url or
 // not.
 func isValidURL(toTest string) bool {
 	_, err := url.ParseRequestURI(toTest)
