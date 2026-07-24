@@ -5,7 +5,6 @@
 <p align="center">
     <a href="https://github.com/xuri/xgen/actions/workflows/go.yml"><img src="https://github.com/xuri/xgen/actions/workflows/go.yml/badge.svg" alt="Build Status"></a>
     <a href="https://codecov.io/gh/xuri/xgen"><img src="https://codecov.io/gh/xuri/xgen/branch/master/graph/badge.svg" alt="Code Coverage"></a>
-    <a href="https://goreportcard.com/report/github.com/xuri/xgen"><img src="https://goreportcard.com/badge/github.com/xuri/xgen" alt="Go Report Card"></a>
     <a href="https://pkg.go.dev/github.com/xuri/xgen"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white" alt="go.dev"></a>
     <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/license-bsd-orange.svg" alt="Licenses"></a>
     <a href="https://www.paypal.me/xuri"><img src="https://img.shields.io/badge/Donate-PayPal-green.svg" alt="Donate"></a>
