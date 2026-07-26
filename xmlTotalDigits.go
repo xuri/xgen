@@ -3,7 +3,7 @@
 // LICENSE file.
 //
 // Package xgen written in pure Go providing a set of functions that allow you
-// to parse XSD (XML schema files). This library needs Go version 1.10 or
+// to parse XSD (XML schema files). This library needs Go version 1.25.0 or
 // later.
 
 package xgen

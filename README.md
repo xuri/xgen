@@ -14,7 +14,7 @@
 
 ## Introduction
 
-xgen is a library written in pure Go providing a set of functions that allow you to parse XSD (XML schema definition) files. This library needs Go version 1.23.0 or later. The full API docs can be seen using go's built-in documentation tool, or online at [go.dev](https://pkg.go.dev/github.com/xuri/xgen).
+xgen is a library written in pure Go providing a set of functions that allow you to parse XSD (XML schema definition) files. This library needs Go version 1.25.0 or later. The full API docs can be seen using go's built-in documentation tool, or online at [go.dev](https://pkg.go.dev/github.com/xuri/xgen).
 
 `xgen` commands automatically compiles XML schema files into the multi-language type or class declarations code.
 

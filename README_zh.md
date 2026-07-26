@@ -14,7 +14,7 @@
 
 ## Introduction
 
-xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.23.0 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen)。
+xgen 是 Go 语言编写的 XSD (XML Schema Definition) 工具基础库。使用本基础库要求使用的 Go 语言为 1.25.0 或更高版本，完整的 API 使用文档请访问 [go.dev](https://pkg.go.dev/github.com/xuri/xgen)。
 
 `xgen` 命令可将 XML 模式定义文件编译为多语言类型或类声明的代码。
 
