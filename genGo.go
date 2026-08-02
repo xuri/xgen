@@ -103,7 +103,7 @@ func (gen *CodeGenerator) GenGo() error {
 	if packageName == "" {
 		packageName = "schema"
 	}
-	source, err := format.Source([]byte(fmt.Sprintf("%s\n\npackage %s\n%s%s", copyright, packageName, importPackage, gen.Field)))
+	source, err := format.Source(fmt.Appendf(nil, "%s\n\npackage %s\n%s%s", copyright, packageName, importPackage, gen.Field))
 	if err != nil {
 		f.WriteString(fmt.Sprintf("package %s\n%s%s", packageName, importPackage, gen.Field))
 		return err

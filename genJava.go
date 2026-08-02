@@ -59,7 +59,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;`
 
-	f.Write([]byte(fmt.Sprintf("%s\n\npackage %s;\n\n%s\n%s", copyright, packageName, importPackage, gen.Field)))
+	f.Write(fmt.Appendf(nil, "%s\n\npackage %s;\n\n%s\n%s", copyright, packageName, importPackage, gen.Field))
 	return err
 }
 

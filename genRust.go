@@ -113,7 +113,7 @@ func (gen *CodeGenerator) GenRust() error {
 use serde::Deserialize;
 
 use serde_xml_rs::from_reader;`
-	source := []byte(fmt.Sprintf("%s\n\n%s\n%s", copyright, extern, gen.Field))
+	source := fmt.Appendf(nil, "%s\n\n%s\n%s", copyright, extern, gen.Field)
 	f.Write(source)
 	return err
 }

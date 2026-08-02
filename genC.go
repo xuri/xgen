@@ -50,7 +50,7 @@ func (gen *CodeGenerator) GenC() error {
 		return err
 	}
 	defer f.Close()
-	source := []byte(fmt.Sprintf("%s\n%s", copyright, gen.Field))
+	source := fmt.Appendf(nil, "%s\n%s", copyright, gen.Field)
 	f.Write(source)
 	return err
 }
