@@ -738,3 +738,62 @@ func TestOnAddContentHookIsNil(t *testing.T) {
 		})
 	}
 }
+
+func TestSchemaLocationCannotEscapeFileDir(t *testing.T) {
+	root := t.TempDir()
+	schemaDir := filepath.Join(root, "schemas")
+	require.NoError(t, os.MkdirAll(schemaDir, 0755))
+
+	mainXSD := filepath.Join(schemaDir, "main.xsd")
+	secretXSD := filepath.Join(root, "secret.xsd")
+	outputDir := filepath.Join(root, "out")
+
+	mainContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:s="http://internal.example/secret"
+           targetNamespace="http://victim.example/main">
+
+  <xs:import
+      namespace="http://internal.example/secret"
+      schemaLocation="../secret.xsd"/>
+
+  <xs:element name="test" type="s:INTERNAL_SECRET_VALUE_987654"/>
+
+</xs:schema>
+`
+
+	secretContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://internal.example/secret">
+
+  <xs:simpleType name="INTERNAL_SECRET_VALUE_987654">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+</xs:schema>
+`
+
+	require.NoError(t, os.WriteFile(mainXSD, []byte(mainContent), 0644))
+	require.NoError(t, os.WriteFile(secretXSD, []byte(secretContent), 0644))
+
+	parser := NewParser(&Options{
+		FilePath:            mainXSD,
+		InputDir:            schemaDir,
+		OutputDir:           outputDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+	})
+
+	require.NoError(t, parser.Parse())
+
+	// The traversal escape must be rejected, so the outside schema
+	// must remain unread and unprocessed.
+	info, err := os.Stat(secretXSD)
+	require.NoError(t, err)
+	assert.Equal(t, int64(265), info.Size())
+}

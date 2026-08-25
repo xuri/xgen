@@ -207,6 +207,10 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		return
 	}
 	xsdFile := filepath.Join(opt.FileDir, schemaLocation)
+	rel, relErr := filepath.Rel(opt.FileDir, xsdFile)
+	if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return
+	}
 	var fi os.FileInfo
 	fi, err = os.Stat(xsdFile)
 	if err != nil {
