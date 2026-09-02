@@ -5,8 +5,8 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.25.0, 1.26.0]
-        platform: [ubuntu-latest]
+        go-version: [1.25.0, 1.26.0, 1.27.0]
+        platform: [ubuntu-26.04]
     runs-on: ${{ matrix.platform }}
     steps:
 
