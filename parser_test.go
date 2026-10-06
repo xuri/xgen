@@ -797,3 +797,62 @@ func TestSchemaLocationCannotEscapeFileDir(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(265), info.Size())
 }
+
+func TestIncludeSchemaLocationCannotEscapeFileDir(t *testing.T) {
+	root := t.TempDir()
+	schemaDir := filepath.Join(root, "schemas")
+	require.NoError(t, os.MkdirAll(schemaDir, 0755))
+
+	mainXSD := filepath.Join(schemaDir, "main.xsd")
+	secretXSD := filepath.Join(root, "secret.xsd")
+	outputDir := filepath.Join(root, "out")
+
+	mainContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:y="http://x/y"
+           targetNamespace="http://victim/main">
+
+  <xs:include schemaLocation="../secret.xsd"/>
+  <xs:import namespace="http://x/y" schemaLocation="."/>
+
+  <xs:element name="test" type="y:INTERNAL_SECRET_987654"/>
+
+</xs:schema>
+`
+
+	secretContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://x/y">
+
+  <xs:simpleType name="INTERNAL_SECRET_987654">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+</xs:schema>
+`
+
+	require.NoError(t, os.WriteFile(mainXSD, []byte(mainContent), 0644))
+	require.NoError(t, os.WriteFile(secretXSD, []byte(secretContent), 0644))
+
+	parser := NewParser(&Options{
+		FilePath:            mainXSD,
+		InputDir:            schemaDir,
+		OutputDir:           outputDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+	})
+
+	require.NoError(t, parser.Parse())
+
+	// The escaped include must be rejected, so the secret type defined outside
+	// the input directory must remain unresolved instead of resolving to its
+	// xs:string restriction base.
+	valueType, err := parser.GetValueType("y:INTERNAL_SECRET_987654", parser.ProtoTree)
+	require.NoError(t, err)
+	assert.Equal(t, "INTERNAL_SECRET_987654", valueType)
+}
