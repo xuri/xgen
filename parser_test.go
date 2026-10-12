@@ -856,3 +856,67 @@ func TestIncludeSchemaLocationCannotEscapeFileDir(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "INTERNAL_SECRET_987654", valueType)
 }
+
+func TestIncludeSchemaLocationWithinFileDirIsFollowed(t *testing.T) {
+	root := t.TempDir()
+	schemaDir := filepath.Join(root, "schemas")
+	require.NoError(t, os.MkdirAll(schemaDir, 0755))
+
+	mainXSD := filepath.Join(schemaDir, "main.xsd")
+	includedXSD := filepath.Join(schemaDir, "included.xsd")
+	outputDir := filepath.Join(root, "out")
+
+	// main.xsd pulls in an in-bounds include (same directory) and uses an
+	// xs:import whose schemaLocation is "." so GetValueType walks IncludeMap.
+	mainContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:y="http://x/y"
+           targetNamespace="http://victim/main">
+
+  <xs:include schemaLocation="included.xsd"/>
+  <xs:import namespace="http://x/y" schemaLocation="."/>
+
+  <xs:element name="test" type="y:INCLUDED_TYPE_12345"/>
+
+</xs:schema>
+`
+
+	// included.xsd lives inside the schema directory, so the containment check
+	// in GetValueType's include loop must let it through and resolve the type.
+	includedContent := `<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://x/y">
+
+  <xs:simpleType name="INCLUDED_TYPE_12345">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+
+</xs:schema>
+`
+
+	require.NoError(t, os.WriteFile(mainXSD, []byte(mainContent), 0644))
+	require.NoError(t, os.WriteFile(includedXSD, []byte(includedContent), 0644))
+
+	parser := NewParser(&Options{
+		FilePath:            mainXSD,
+		InputDir:            schemaDir,
+		OutputDir:           outputDir,
+		Lang:                "Go",
+		IncludeMap:          make(map[string]bool),
+		LocalNameNSMap:      make(map[string]string),
+		NSSchemaLocationMap: make(map[string]string),
+		ParseFileList:       make(map[string]bool),
+		ParseFileMap:        make(map[string][]interface{}),
+		ProtoTree:           make([]interface{}, 0),
+	})
+
+	require.NoError(t, parser.Parse())
+
+	// The in-bounds include must be followed, so the type resolves to its
+	// restriction base (xgen strips the "xs:" prefix) instead of staying an
+	// unresolved local name.
+	valueType, err := parser.GetValueType("y:INCLUDED_TYPE_12345", parser.ProtoTree)
+	require.NoError(t, err)
+	assert.NotEqual(t, "INCLUDED_TYPE_12345", valueType, "in-bounds include should resolve the type")
+	assert.Equal(t, "string", valueType)
+}
