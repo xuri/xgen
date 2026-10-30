@@ -220,8 +220,13 @@ func (opt *Options) GetValueType(value string, XSDSchema []interface{}) (valueTy
 		// extract type of value from include schema.
 		valueType = ""
 		for include := range opt.IncludeMap {
+			includeFile := filepath.Join(opt.FileDir, include)
+			rel, relErr := filepath.Rel(opt.FileDir, includeFile)
+			if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+				continue
+			}
 			parser := NewParser(&Options{
-				FilePath:            filepath.Join(opt.FileDir, include),
+				FilePath:            includeFile,
 				OutputDir:           opt.OutputDir,
 				Extract:             true,
 				Lang:                opt.Lang,
